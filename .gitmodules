@@ -1,0 +1,3 @@
+[submodule "proto"]
+	path = proto
+	url = git@github.com:dung13890/go-clean-proto.git
