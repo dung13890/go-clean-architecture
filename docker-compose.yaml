@@ -1,0 +1,44 @@
+version: '3.8'
+volumes:
+  go_volume:
+  postgres_volume:
+services:
+  go-app:
+    build:
+      context: ./
+      dockerfile: ./.docker/local/go/Dockerfile
+    platform: linux/amd64
+    image: go-app:1.8
+    networks:
+      - go-app-net
+    stdin_open: true
+    tty: true
+    depends_on:
+      - db
+    volumes:
+      - ./:/var/www/app
+    working_dir: /var/www/app
+    #command: air -c cmd/app/.air.toml
+    ports:
+      - 8080:8080
+  db:
+    image: postgres:13.4
+    restart: on-failure
+    networks:
+      - go-app-net
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+networks:
+  go-app-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.168.1.0/24
+          gateway: 172.168.1.1

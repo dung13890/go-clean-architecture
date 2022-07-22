@@ -1,0 +1,34 @@
+name: Go-ci
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: run lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+        args: --config=./.golangci.yaml --timeout=10m
+
+  tests:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: Unit Tests
+      run: go test --short ./...
