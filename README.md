@@ -50,6 +50,9 @@ air -c cmd/app/.air.toml
 # Check lint
 make lint
 
+# Make mock file
+make build-mock
+
 # Check Unit test
 make test
 
