@@ -45,7 +45,6 @@ func TestFetchUser(t *testing.T) {
 		tc := tc
 
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 			tc.mock(repo)
 
 			res, err := uc.Fetch(context.Background())
@@ -89,7 +88,6 @@ func TestFindUser(t *testing.T) {
 		tc := tc
 
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 			tc.mock(repo)
 
 			res, err := uc.Find(context.Background(), tc.args.(int))
@@ -129,7 +127,6 @@ func TestStoreUser(t *testing.T) {
 		tc := tc
 
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 			repo := mockDomain.NewMockUserRepository(ctrl)
 			uc := usecase.NewUsecase(repo)
 

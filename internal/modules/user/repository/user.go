@@ -4,7 +4,6 @@ import (
 	"context"
 	"go-app/internal/domain"
 	"go-app/pkg/errors"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -41,8 +40,6 @@ func (rp *UserRepository) Find(c context.Context, id int) (*domain.User, error) 
 
 // Store will create data to db
 func (rp *UserRepository) Store(c context.Context, user *domain.User) error {
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
 	if err := rp.DB.Debug().Create(user).Error; err != nil {
 		return errors.Wrap(err)
 	}

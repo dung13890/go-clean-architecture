@@ -35,6 +35,7 @@ linters:
     - wrapcheck
     - wastedassign
     - tagliatelle
+    - paralleltest
     - gosec
   disable-all: false
 

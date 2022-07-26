@@ -5,7 +5,6 @@ import (
 	"go-app/internal/domain"
 	"go-app/pkg/errors"
 	"go-app/pkg/utils"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -43,8 +42,6 @@ func (rp *RoleRepository) Find(c context.Context, id int) (*domain.Role, error) 
 // Store will create data to db
 func (rp *RoleRepository) Store(c context.Context, role *domain.Role) error {
 	role.Slug = utils.Slugify(role.Name)
-	role.CreatedAt = time.Now()
-	role.UpdatedAt = time.Now()
 	if err := rp.DB.Debug().Create(role).Error; err != nil {
 		return errors.Wrap(err)
 	}
