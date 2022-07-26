@@ -62,8 +62,13 @@ curl -X POST \
   -H 'accept: application/json' \
   -H 'content-type: application/json' \
   -d '{
-	"name": "Administractor"
+    "name": "Administractor"
 }'
+
+curl -X GET \
+  http://localhost:8080/api/roles \
+  -H 'accept: application/json' \
+  -H 'content-type: application/json'
 ```
 
 ## Project structure
@@ -74,12 +79,15 @@ This application is divided into 2 layers, internal and pkg:
 - Pkg is tools (logs, database, utils,...)
 
 The communication between layers
+
+![Clean Architecture Layer](clean_layers.jpg)
 ```
-HTTP | GRPC > 	usecase (interface)
-		usecase (interface)	>	repository (interface) (Postgres)	>	entity (domain)
-		usecase (interface)	<	repository (interface) (Postgres)
-HTTP | GRPC < 	usecase (interface)
+    Delivery >  usecase (interface)
+                usecase (interface) > repository (interface)
+                usecase (interface) < repository (interface)
+    Delivery <  usecase (interface)
 ```
+
 
 For Internal application use 4 domain layers:
 
@@ -91,10 +99,10 @@ Entities are simple data structures:
 // Path internal/domain/role.go
 // Role entity
 type Role struct {
-	ID        uint      `json:"id"`
-	Name      string    `json:"name"`
-	Slug      string    `json:"slug"`
-	CreatedAt time.Time `json:"created_at"`
+    ID        uint      `json:"id"`
+    Name      string    `json:"name"`
+    Slug      string    `json:"slug"`
+    CreatedAt time.Time `json:"created_at"`
 }
 ```
 
@@ -103,7 +111,7 @@ A repository is an abstract storage (database) that business logic works with. L
 ```go
 // RoleRepository represent the role's usecases
 type RoleRepository interface {
-	Fetch(context.Context) ([]Role, error)
+    Fetch(context.Context) ([]Role, error)
 }
 ```
 
@@ -112,7 +120,7 @@ This layer contains application specific business rules. This a layer decide rep
 ```go
 // RoleUsecase represent the role's repository contract
 type RoleUsecase interface {
-	Fetch(context.Context) ([]Role, error)
+    Fetch(context.Context) ([]Role, error)
 }
 ```
 
@@ -123,25 +131,25 @@ This a layer will decide how the data present. Could be REST API, HTML, or gRPC 
 
 // roleHandler represent the httphandler
 type roleHandler struct {
-	Usecase domain.RoleUsecase
+    Usecase domain.RoleUsecase
 }
 
 // NewHandler will initialize the roles/ resources endpoint
 func NewHandler(e *echo.Echo, uc domain.RoleUsecase) {
-	handler := &roleHandler{
-		Usecase: uc,
-	}
+    handler := &roleHandler{
+        Usecase: uc,
+    }
 
-	g := e.Group("/api")
-	g.GET("/roles", handler.Index)
+    g := e.Group("/api")
+    g.GET("/roles", handler.Index)
 }
 
 // Index will fetch data
 func (hl *roleHandler) Index(c echo.Context) error {
-	ctx := c.Request().Context()
-	roles, _ := hl.Usecase.Fetch(ctx)
+    ctx := c.Request().Context()
+    roles, _ := hl.Usecase.Fetch(ctx)
 
-	return c.JSON(http.StatusOK, roles)
+    return c.JSON(http.StatusOK, roles)
 }
 ```
 

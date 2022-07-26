@@ -7,7 +7,8 @@ lint:
 	golangci-lint run --config=.golangci.yaml
 
 test: ### run test
-	go test -v -cover -race -coverpkg=./... ./...
+	go test -v -race -coverprofile=cover.out -coverpkg=./... ./...
+	go tool cover -func cover.out
 
 .PHONY: build-mock
 # put the files with interfaces you'd like to mock in prerequisites
