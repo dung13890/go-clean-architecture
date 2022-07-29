@@ -8,8 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// roleHandler represent the httphandler
-type roleHandler struct {
+// RoleHandler represent the httphandler
+type RoleHandler struct {
 	Usecase domain.RoleUsecase
 }
 
@@ -19,7 +19,7 @@ type errorResponse struct {
 
 // NewHandler will initialize the roles/ resources endpoint
 func NewHandler(e *echo.Echo, uc domain.RoleUsecase) {
-	handler := &roleHandler{
+	handler := &RoleHandler{
 		Usecase: uc,
 	}
 
@@ -32,7 +32,7 @@ func NewHandler(e *echo.Echo, uc domain.RoleUsecase) {
 }
 
 // Index will fetch data
-func (hl *roleHandler) Index(c echo.Context) error {
+func (hl *RoleHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	roles, _ := hl.Usecase.Fetch(ctx)
 
@@ -40,7 +40,7 @@ func (hl *roleHandler) Index(c echo.Context) error {
 }
 
 // Show will Find data
-func (hl *roleHandler) Show(c echo.Context) error {
+func (hl *RoleHandler) Show(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, &errorResponse{Message: err.Error()})
@@ -55,11 +55,12 @@ func (hl *roleHandler) Show(c echo.Context) error {
 }
 
 // Store will create data
-func (hl *roleHandler) Store(c echo.Context) error {
+func (hl *RoleHandler) Store(c echo.Context) error {
 	role := &domain.Role{}
 	if err := c.Bind(role); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, &errorResponse{Message: err.Error()})
 	}
+
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, role); err != nil {
 		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
@@ -69,13 +70,13 @@ func (hl *roleHandler) Store(c echo.Context) error {
 }
 
 // Update will update data
-func (hl *roleHandler) Update(c echo.Context) error {
+func (hl *RoleHandler) Update(c echo.Context) error {
 	role := &domain.Role{}
 
 	return c.JSON(http.StatusOK, role)
 }
 
 // Delete will delete data
-func (hl *roleHandler) Delete(c echo.Context) error {
+func (hl *RoleHandler) Delete(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }

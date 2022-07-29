@@ -8,8 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// userHandler represent the httphandler
-type userHandler struct {
+// UserHandler represent the httphandler
+type UserHandler struct {
 	Usecase domain.UserUsecase
 }
 
@@ -19,7 +19,7 @@ type errorResponse struct {
 
 // NewHandler will initialize the users/ resources endpoint
 func NewHandler(e *echo.Echo, uc domain.UserUsecase) {
-	handler := &userHandler{
+	handler := &UserHandler{
 		Usecase: uc,
 	}
 
@@ -32,7 +32,7 @@ func NewHandler(e *echo.Echo, uc domain.UserUsecase) {
 }
 
 // Index will fetch data
-func (hl *userHandler) Index(c echo.Context) error {
+func (hl *UserHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	users, _ := hl.Usecase.Fetch(ctx)
 
@@ -40,7 +40,7 @@ func (hl *userHandler) Index(c echo.Context) error {
 }
 
 // Show will Find data
-func (hl *userHandler) Show(c echo.Context) error {
+func (hl *UserHandler) Show(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, &errorResponse{Message: err.Error()})
@@ -55,7 +55,7 @@ func (hl *userHandler) Show(c echo.Context) error {
 }
 
 // Store will create data
-func (hl *userHandler) Store(c echo.Context) error {
+func (hl *UserHandler) Store(c echo.Context) error {
 	user := &domain.User{}
 	if err := c.Bind(user); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, &errorResponse{Message: err.Error()})
@@ -69,13 +69,13 @@ func (hl *userHandler) Store(c echo.Context) error {
 }
 
 // Update will update data
-func (hl *userHandler) Update(c echo.Context) error {
+func (hl *UserHandler) Update(c echo.Context) error {
 	user := &domain.User{}
 
 	return c.JSON(http.StatusOK, user)
 }
 
 // Delete will delete data
-func (hl *userHandler) Delete(c echo.Context) error {
+func (hl *UserHandler) Delete(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
