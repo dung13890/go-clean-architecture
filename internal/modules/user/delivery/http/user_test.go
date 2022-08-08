@@ -310,10 +310,11 @@ func TestHandlerDeleteRole(t *testing.T) {
 func TestNewUserHandler(t *testing.T) {
 	t.Parallel()
 	e := echo.New()
+	g := e.Group("/v1")
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	usecaseMock := mockDomain.NewMockUserUsecase(ctrl)
-	userHttp.NewHandler(e, usecaseMock)
+	userHttp.NewHandler(g, usecaseMock)
 }

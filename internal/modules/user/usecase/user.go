@@ -11,6 +11,26 @@ type UserUsecase struct {
 	repo domain.UserRepository
 }
 
+// Search is a function that returns list of users filtered by query
+func (uc *UserUsecase) Search(ctx context.Context, q domain.QueryParam) ([]domain.User, error) {
+	items, err := uc.repo.Search(ctx, q)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	return items, nil
+}
+
+// FindByQuery is a function that returns a user filtered by query
+func (uc *UserUsecase) FindByQuery(ctx context.Context, q domain.QueryParam) (*domain.User, error) {
+	item, err := uc.repo.FindByQuery(ctx, q)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	return item, nil
+}
+
 // NewUsecase will create new UserUsecase object
 func NewUsecase(rp domain.UserRepository) domain.UserUsecase {
 	return &UserUsecase{
