@@ -18,12 +18,11 @@ type errorResponse struct {
 }
 
 // NewHandler will initialize the roles/ resources endpoint
-func NewHandler(e *echo.Echo, uc domain.RoleUsecase) {
+func NewHandler(g *echo.Group, uc domain.RoleUsecase) {
 	handler := &RoleHandler{
 		Usecase: uc,
 	}
 
-	g := e.Group("/api")
 	g.GET("/roles", handler.Index)
 	g.GET("/roles/:id", handler.Show)
 	g.POST("/roles", handler.Store)

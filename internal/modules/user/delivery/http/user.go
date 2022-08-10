@@ -18,12 +18,11 @@ type errorResponse struct {
 }
 
 // NewHandler will initialize the users/ resources endpoint
-func NewHandler(e *echo.Echo, uc domain.UserUsecase) {
+func NewHandler(g *echo.Group, uc domain.UserUsecase) {
 	handler := &UserHandler{
 		Usecase: uc,
 	}
 
-	g := e.Group("/api")
 	g.GET("/users", handler.Index)
 	g.GET("/users/:id", handler.Show)
 	g.POST("/users", handler.Store)

@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"go-app/config"
-	"go-app/internal/factory"
+	"go-app/internal/registry"
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
 	"go-app/pkg/postgres"
@@ -38,7 +38,10 @@ func Run(conf config.AppConfig) error {
 	}
 
 	e := echo.New()
-	factory.NewFactory(e, db)
+
+	repo := registry.NewRepository(db)
+	usecase := registry.NewUsecase(repo)
+	registry.NewHTTPHandler(e, usecase)
 
 	s := &http.Server{
 		Handler:     e,
