@@ -65,6 +65,36 @@ func (mr *MockUserRepositoryMockRecorder) Find(ctx, id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserRepository)(nil).Find), ctx, id)
 }
 
+// FindByQuery mocks base method.
+func (m *MockUserRepository) FindByQuery(ctx context.Context, q domain.UserQueryParam) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByQuery", ctx, q)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByQuery indicates an expected call of FindByQuery.
+func (mr *MockUserRepositoryMockRecorder) FindByQuery(ctx, q interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByQuery", reflect.TypeOf((*MockUserRepository)(nil).FindByQuery), ctx, q)
+}
+
+// Search mocks base method.
+func (m *MockUserRepository) Search(ctx context.Context, q domain.UserQueryParam) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, q)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockUserRepositoryMockRecorder) Search(ctx, q interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockUserRepository)(nil).Search), ctx, q)
+}
+
 // Store mocks base method.
 func (m *MockUserRepository) Store(ctx context.Context, u *domain.User) error {
 	m.ctrl.T.Helper()
@@ -130,6 +160,36 @@ func (m *MockUserUsecase) Find(ctx context.Context, id int) (*domain.User, error
 func (mr *MockUserUsecaseMockRecorder) Find(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserUsecase)(nil).Find), ctx, id)
+}
+
+// FindByQuery mocks base method.
+func (m *MockUserUsecase) FindByQuery(ctx context.Context, q domain.UserQueryParam) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByQuery", ctx, q)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByQuery indicates an expected call of FindByQuery.
+func (mr *MockUserUsecaseMockRecorder) FindByQuery(ctx, q interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByQuery", reflect.TypeOf((*MockUserUsecase)(nil).FindByQuery), ctx, q)
+}
+
+// Search mocks base method.
+func (m *MockUserUsecase) Search(ctx context.Context, q domain.UserQueryParam) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, q)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockUserUsecaseMockRecorder) Search(ctx, q interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockUserUsecase)(nil).Search), ctx, q)
 }
 
 // Store mocks base method.

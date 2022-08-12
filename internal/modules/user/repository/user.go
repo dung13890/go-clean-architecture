@@ -14,7 +14,7 @@ type UserRepository struct {
 }
 
 // Search is a function that returns a list of users filtered by query
-func (rp *UserRepository) Search(ctx context.Context, q domain.QueryParam) ([]domain.User, error) {
+func (rp *UserRepository) Search(ctx context.Context, q domain.UserQueryParam) ([]domain.User, error) {
 	var users []domain.User
 	if err := rp.DB.Debug().Where("email = ? ", q.Email).Find(&users).Error; err != nil {
 		return users, errors.Wrap(err)
@@ -24,7 +24,7 @@ func (rp *UserRepository) Search(ctx context.Context, q domain.QueryParam) ([]do
 }
 
 // FindByQuery is a function that returns a users filtered by query
-func (rp *UserRepository) FindByQuery(ctx context.Context, q domain.QueryParam) (*domain.User, error) {
+func (rp *UserRepository) FindByQuery(ctx context.Context, q domain.UserQueryParam) (*domain.User, error) {
 	user := &domain.User{}
 	if err := rp.DB.Debug().Where("email = ? ", q.Email).First(&user).Error; err != nil {
 		return user, errors.Wrap(err)

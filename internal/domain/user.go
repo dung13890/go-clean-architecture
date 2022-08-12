@@ -17,8 +17,8 @@ type User struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-// QueryParam for search
-type QueryParam struct {
+// UserQueryParam for search
+type UserQueryParam struct {
 	Email string `json:"email"`
 }
 
@@ -27,8 +27,8 @@ type UserRepository interface {
 	Fetch(context.Context) ([]User, error)
 	Find(ctx context.Context, id int) (*User, error)
 	Store(ctx context.Context, u *User) error
-	Search(ctx context.Context, q QueryParam) ([]User, error)
-	FindByQuery(ctx context.Context, q QueryParam) (*User, error)
+	Search(ctx context.Context, q UserQueryParam) ([]User, error)
+	FindByQuery(ctx context.Context, q UserQueryParam) (*User, error)
 }
 
 // UserUsecase represent the user's repository contract
@@ -36,6 +36,6 @@ type UserUsecase interface {
 	Fetch(context.Context) ([]User, error)
 	Find(ctx context.Context, id int) (*User, error)
 	Store(ctx context.Context, u *User) error
-	Search(ctx context.Context, q QueryParam) ([]User, error)
-	FindByQuery(ctx context.Context, q QueryParam) (*User, error)
+	Search(ctx context.Context, q UserQueryParam) ([]User, error)
+	FindByQuery(ctx context.Context, q UserQueryParam) (*User, error)
 }

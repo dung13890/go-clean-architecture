@@ -12,6 +12,7 @@ type AppConfig struct {
 	App           string `mapstructure:"APP_ENV"`
 	AllowedOrigin string `mapstructure:"APP_ALLOWED_ORIGIN"`
 	AppHost       string `mapstructure:"APP_HOST"`
+	AppJWTKey     string `mapstructure:"APP_JWT_KEY"`
 }
 
 // LoadConfig config setting from .env.

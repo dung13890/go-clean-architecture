@@ -4,6 +4,7 @@ import (
 	"go-app/config"
 	roleHttp "go-app/internal/modules/role/delivery/http"
 	userHttp "go-app/internal/modules/user/delivery/http"
+	"go-app/pkg/utils"
 	"net/http"
 	"strings"
 
@@ -23,8 +24,8 @@ func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	DefaultJWTConfig := middleware.JWTConfig{
 		TokenLookup: "header:" + echo.HeaderAuthorization,
 		AuthScheme:  "Bearer",
-		Claims:      &userHttp.Claims{},
-		SigningKey:  userHttp.JwtKey,
+		Claims:      &utils.Claims{},
+		SigningKey:  utils.JwtKey,
 	}
 	g.Use(middleware.JWTWithConfig(DefaultJWTConfig))
 
