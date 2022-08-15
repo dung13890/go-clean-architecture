@@ -4,6 +4,7 @@ import (
 	"go-app/config"
 	roleHttp "go-app/internal/modules/role/delivery/http"
 	userHttp "go-app/internal/modules/user/delivery/http"
+	"go-app/pkg/utils"
 	"net/http"
 	"strings"
 
@@ -15,7 +16,18 @@ import (
 func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	authGroup := e.Group("")
+	userHttp.NewAuthHandler(authGroup, uc.UserUsecase)
+
 	g := e.Group("/api")
+	DefaultJWTConfig := middleware.JWTConfig{
+		TokenLookup: "header:" + echo.HeaderAuthorization,
+		AuthScheme:  "Bearer",
+		Claims:      &utils.Claims{},
+		SigningKey:  utils.JwtKey,
+	}
+	g.Use(middleware.JWTWithConfig(DefaultJWTConfig))
 
 	// CORS restricted with a custom function to allow origins
 	// and with the GET, PUT, POST or DELETE methods allowed.

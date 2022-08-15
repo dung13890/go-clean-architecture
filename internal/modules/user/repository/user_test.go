@@ -165,17 +165,18 @@ func TestStoreUser(t *testing.T) {
 			mock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 				query := regexp.QuoteMeta(
-					`INSERT INTO "users" ("name","email","role_id","created_at","updated_at","deleted_at")
-								VALUES ($1,$2,$3,$4,$5,$6) RETURNING "id"`,
+					`INSERT INTO "users" ("name","email","role_id","password","created_at","updated_at","deleted_at")
+								VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "id"`,
 				)
 				mock.ExpectQuery(query).
-					WithArgs("name", "email", 1, timeNow, timeNow, nil).
+					WithArgs("name", "email", 1, "password", timeNow, timeNow, nil).
 					WillReturnRows(rows)
 			},
 			args: &domain.User{
 				Name:      "name",
 				Email:     "email",
 				RoleID:    1,
+				Password:  "password",
 				CreatedAt: timeNow,
 				UpdatedAt: timeNow,
 			},
@@ -185,17 +186,18 @@ func TestStoreUser(t *testing.T) {
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`INSERT INTO "users" ("name","email","role_id","created_at","updated_at","deleted_at")
-								VALUES ($1,$2,$3,$4,$5,$6) RETURNING "id"`,
+					`INSERT INTO "users" ("name","email","role_id","password","created_at","updated_at","deleted_at")
+								VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "id"`,
 				)
 				mock.ExpectQuery(query).
-					WithArgs("name2", "email2", 2, timeNow, timeNow, nil).
+					WithArgs("name2", "email2", 2, "password", timeNow, timeNow, nil).
 					WillReturnError(errRp)
 			},
 			args: &domain.User{
 				Name:      "name2",
 				Email:     "email2",
 				RoleID:    2,
+				Password:  "password",
 				CreatedAt: timeNow,
 				UpdatedAt: timeNow,
 			},
