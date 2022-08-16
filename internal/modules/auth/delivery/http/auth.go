@@ -2,7 +2,6 @@ package http
 
 import (
 	"go-app/internal/domain"
-	"go-app/pkg/utils"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,11 +9,15 @@ import (
 
 // AuthHandler represent the httphandler
 type AuthHandler struct {
-	Usecase domain.UserUsecase
+	Usecase domain.AuthUsecase
+}
+
+type errorResponse struct {
+	Message string `json:"message"`
 }
 
 // NewAuthHandler will initialize the Auth endpoint
-func NewAuthHandler(g *echo.Group, uc domain.UserUsecase) {
+func NewAuthHandler(g *echo.Group, uc domain.AuthUsecase) {
 	handler := &AuthHandler{
 		Usecase: uc,
 	}
@@ -31,25 +34,15 @@ func (hl *AuthHandler) Login(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	query := domain.UserQueryParam{Email: user.Email}
-	UserDb, err := hl.Usecase.FindByQuery(ctx, query)
+	UserLogin, tokenStr, err := hl.Usecase.Login(ctx, user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, &errorResponse{Message: "Invalidate Email"})
-	}
-
-	if !utils.ComparePassword(user.Password, UserDb.Password) {
-		return c.JSON(http.StatusBadRequest, &errorResponse{Message: "Invalidate Password"})
-	}
-
-	tokenStr, err := utils.GenerateToken(UserDb)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, UserLoginResponse{
-		UserID:      UserDb.ID,
-		Email:       UserDb.Email,
-		RoleID:      UserDb.RoleID,
+		UserID:      UserLogin.ID,
+		Email:       UserLogin.Email,
+		RoleID:      UserLogin.RoleID,
 		AccessToken: tokenStr,
 	})
 }
@@ -62,16 +55,10 @@ func (hl *AuthHandler) Register(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	passHash, err := utils.GeneratePassword(user.Password)
+	userRegister, err := hl.Usecase.Register(ctx, user)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
 	}
 
-	user.Password = passHash
-	err = hl.Usecase.Store(ctx, user)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
-	}
-
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, userRegister)
 }

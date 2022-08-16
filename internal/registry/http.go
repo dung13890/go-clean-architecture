@@ -2,6 +2,7 @@ package registry
 
 import (
 	"go-app/config"
+	authHttp "go-app/internal/modules/auth/delivery/http"
 	roleHttp "go-app/internal/modules/role/delivery/http"
 	userHttp "go-app/internal/modules/user/delivery/http"
 	"go-app/pkg/utils"
@@ -18,7 +19,7 @@ func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	e.Use(middleware.Recover())
 
 	authGroup := e.Group("")
-	userHttp.NewAuthHandler(authGroup, uc.UserUsecase)
+	authHttp.NewAuthHandler(authGroup, uc.AuthUsecase)
 
 	g := e.Group("/api")
 	DefaultJWTConfig := middleware.JWTConfig{

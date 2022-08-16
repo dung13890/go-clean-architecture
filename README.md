@@ -32,6 +32,12 @@ Start development:
 # Copy env
 cp .env.example .env
 
+# setup USER_ID, GROUP_ID
+sed -i 's/USER_ID/'"$(id -u)"'/'  .env
+sed -i 's/GROUP_ID/'"$(id -g)"'/'  .env
+
+# setup
+
 # Start docker
 docker compose up -d
 
