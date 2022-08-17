@@ -11,7 +11,7 @@ func GeneratePassword(pass string) (string, error) {
 	return string(bytes), err
 }
 
-// ComparePassword used to compare password with hashed password
+// ComparePassword used to compare new password with hashed password
 func ComparePassword(pass string, hashPassword string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(pass)) == nil
 }

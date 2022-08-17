@@ -13,10 +13,6 @@ type RoleHandler struct {
 	Usecase domain.RoleUsecase
 }
 
-type errorResponse struct {
-	Message string `json:"message"`
-}
-
 // NewHandler will initialize the roles/ resources endpoint
 func NewHandler(g *echo.Group, uc domain.RoleUsecase) {
 	handler := &RoleHandler{
@@ -42,12 +38,12 @@ func (hl *RoleHandler) Index(c echo.Context) error {
 func (hl *RoleHandler) Show(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusNotFound, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 	ctx := c.Request().Context()
 	role, err := hl.Usecase.Find(ctx, id)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, role)
@@ -57,12 +53,12 @@ func (hl *RoleHandler) Show(c echo.Context) error {
 func (hl *RoleHandler) Store(c echo.Context) error {
 	role := &domain.Role{}
 	if err := c.Bind(role); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, role); err != nil {
-		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusCreated, role)
