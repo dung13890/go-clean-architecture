@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"go-app/config"
+	"go-app/internal/constants"
 	"go-app/internal/registry"
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
@@ -16,12 +17,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	connectTimeout      = time.Second * 10
-	connectWaitDuration = time.Second * 5
-	connectReadTimeout  = time.Second * 30
-)
-
 // Run Application
 func Run(conf config.AppConfig) error {
 	dbConf := config.GetDBConfig()
@@ -31,7 +26,7 @@ func Run(conf config.AppConfig) error {
 		db, err = postgres.NewGormDB(dbConf)
 		if err != nil {
 			logger.Info().Printf("Wait for starting db: %v", err)
-			time.Sleep(connectWaitDuration)
+			time.Sleep(constants.ConnectWaitDuration)
 		} else {
 			break
 		}
@@ -46,7 +41,7 @@ func Run(conf config.AppConfig) error {
 	s := &http.Server{
 		Handler:     e,
 		Addr:        conf.AppHost,
-		ReadTimeout: connectReadTimeout,
+		ReadTimeout: constants.ConnectReadTimeout,
 	}
 
 	go func() {
@@ -66,7 +61,7 @@ func Run(conf config.AppConfig) error {
 	signal.Notify(quit, os.Interrupt)
 
 	logger.Info().Printf("Signal: %d, received", <-quit)
-	ctx, cancel := context.WithTimeout(context.Background(), connectTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.ConnectTimeout)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		return errors.Wrap(err)

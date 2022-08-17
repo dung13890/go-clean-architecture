@@ -2,10 +2,10 @@ package registry
 
 import (
 	"go-app/config"
+	"go-app/internal/domain"
 	authHttp "go-app/internal/modules/auth/delivery/http"
 	roleHttp "go-app/internal/modules/role/delivery/http"
 	userHttp "go-app/internal/modules/user/delivery/http"
-	"go-app/pkg/utils"
 	"net/http"
 	"strings"
 
@@ -17,16 +17,16 @@ import (
 func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	g := e.Group("/api")
 
-	authGroup := e.Group("")
+	authGroup := g.Group("")
 	authHttp.NewAuthHandler(authGroup, uc.AuthUsecase)
 
-	g := e.Group("/api")
 	DefaultJWTConfig := middleware.JWTConfig{
 		TokenLookup: "header:" + echo.HeaderAuthorization,
 		AuthScheme:  "Bearer",
-		Claims:      &utils.Claims{},
-		SigningKey:  utils.JwtKey,
+		Claims:      &domain.Claims{},
+		SigningKey:  []byte(config.GetAppConfig().AppJWTKey),
 	}
 	g.Use(middleware.JWTWithConfig(DefaultJWTConfig))
 
