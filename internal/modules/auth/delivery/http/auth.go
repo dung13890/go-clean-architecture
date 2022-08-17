@@ -34,15 +34,15 @@ func (hl *AuthHandler) Login(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	UserLogin, tokenStr, err := hl.Usecase.Login(ctx, user)
+	claims, tokenStr, err := hl.Usecase.Login(ctx, user)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, UserLoginResponse{
-		UserID:      UserLogin.ID,
-		Email:       UserLogin.Email,
-		RoleID:      UserLogin.RoleID,
+		UserID:      claims.ID,
+		Email:       claims.Email,
+		RoleID:      claims.RoleID,
 		AccessToken: tokenStr,
 	})
 }
@@ -55,10 +55,16 @@ func (hl *AuthHandler) Register(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	userRegister, err := hl.Usecase.Register(ctx, user)
+	user, err := hl.Usecase.Register(ctx, user)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, userRegister)
+	return c.JSON(http.StatusCreated, UserRegisterResponse{
+		UserID:    user.ID,
+		Email:     user.Email,
+		RoleID:    user.RoleID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	})
 }

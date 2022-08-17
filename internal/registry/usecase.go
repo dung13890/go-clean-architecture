@@ -19,6 +19,6 @@ func NewUsecase(repo *Repository) *Usecase {
 	return &Usecase{
 		RoleUsecase: roleUC.NewUsecase(repo.RoleRepository),
 		UserUsecase: userUC.NewUsecase(repo.UserRepository),
-		AuthUsecase: authUC.NewAuthUsecase(repo.UserRepository),
+		AuthUsecase: authUC.NewUsecase(repo.UserRepository),
 	}
 }

@@ -33,10 +33,7 @@ Start development:
 cp .env.example .env
 
 # setup USER_ID, GROUP_ID
-sed -i 's/USER_ID/'"$(id -u)"'/'  .env
-sed -i 's/GROUP_ID/'"$(id -g)"'/'  .env
-
-# setup
+sed -i "s/USER_ID/$(id -u)/g;s/GROUP_ID/$(id -g)/g" .env
 
 # Start docker
 docker compose up -d
