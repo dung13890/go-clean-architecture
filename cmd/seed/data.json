@@ -1,0 +1,22 @@
+{
+    "roles": [
+        {
+            "id": 1,
+            "name": "Administrator",
+            "slug": "administrator"
+        },
+        {
+            "id": 2,
+            "name": "User",
+            "slug": "user"
+        }
+    ],
+    "users": [
+        {
+            "name": "admin",
+            "email": "admin@example.com",
+            "roleId": 1,
+            "password": "Aa@123456"
+        }
+    ]
+}
