@@ -13,10 +13,6 @@ type UserHandler struct {
 	Usecase domain.UserUsecase
 }
 
-type errorResponse struct {
-	Message string `json:"message"`
-}
-
 // NewHandler will initialize the users/ resources endpoint
 func NewHandler(g *echo.Group, uc domain.UserUsecase) {
 	handler := &UserHandler{
@@ -42,12 +38,12 @@ func (hl *UserHandler) Index(c echo.Context) error {
 func (hl *UserHandler) Show(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusNotFound, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 	ctx := c.Request().Context()
 	user, err := hl.Usecase.Find(ctx, id)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -57,11 +53,11 @@ func (hl *UserHandler) Show(c echo.Context) error {
 func (hl *UserHandler) Store(c echo.Context) error {
 	user := &domain.User{}
 	if err := c.Bind(user); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, user); err != nil {
-		return c.JSON(http.StatusBadRequest, &errorResponse{Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusCreated, user)

@@ -153,7 +153,7 @@ func TestHandlerShowUser(t *testing.T) {
 	}
 }
 
-func TestHandlerStoreRole(t *testing.T) {
+func TestHandlerStoreUser(t *testing.T) {
 	e := echo.New()
 
 	t.Parallel()
@@ -170,16 +170,16 @@ func TestHandlerStoreRole(t *testing.T) {
 			argStore: `{}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				roleMock := domain.User{}
-				_ = json.Unmarshal([]byte(`{}`), &roleMock)
-				usecaseMock.EXPECT().Store(context.Background(), &roleMock).Times(1).Return(nil).AnyTimes()
+				userMock := domain.User{}
+				_ = json.Unmarshal([]byte(`{}`), &userMock)
+				usecaseMock.EXPECT().Store(context.Background(), &userMock).Times(1).Return(nil).AnyTimes()
 
 				if assert.NoError(t, userHandler.Store(c)) {
-					role := domain.User{}
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+					user := domain.User{}
+					_ = json.Unmarshal(rec.Body.Bytes(), &user)
 
 					assert.Equal(t, http.StatusCreated, rec.Code)
-					assert.Equal(t, &domain.User{}, &role)
+					assert.Equal(t, &domain.User{}, &user)
 				}
 			},
 		},
@@ -189,8 +189,8 @@ func TestHandlerStoreRole(t *testing.T) {
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				if assert.NoError(t, userHandler.Store(c)) {
-					var role domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+					var user domain.User
+					_ = json.Unmarshal(rec.Body.Bytes(), &user)
 
 					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 				}
@@ -201,14 +201,14 @@ func TestHandlerStoreRole(t *testing.T) {
 			argStore: `{"Name": "test"}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				roleMock := domain.User{}
-				_ = json.Unmarshal([]byte(`{}`), &roleMock)
-				roleMock.Name = "test"
+				userMock := domain.User{}
+				_ = json.Unmarshal([]byte(`{}`), &userMock)
+				userMock.Name = "test"
 
-				usecaseMock.EXPECT().Store(c.Request().Context(), &roleMock).Return(errNotFound).Times(1)
+				usecaseMock.EXPECT().Store(c.Request().Context(), &userMock).Return(errNotFound).Times(1)
 				if assert.NoError(t, userHandler.Store(c)) {
-					var role domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+					var user domain.User
+					_ = json.Unmarshal(rec.Body.Bytes(), &user)
 
 					assert.Equal(t, http.StatusBadRequest, rec.Code)
 				}
@@ -218,7 +218,7 @@ func TestHandlerStoreRole(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPost, "/roles", strings.NewReader(tc.argStore))
+			req := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(tc.argStore))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
@@ -228,7 +228,7 @@ func TestHandlerStoreRole(t *testing.T) {
 	}
 }
 
-func TestHandlerUpdateRole(t *testing.T) {
+func TestHandlerUpdateUser(t *testing.T) {
 	e := echo.New()
 
 	out, err := json.Marshal(domain.User{})
@@ -236,7 +236,7 @@ func TestHandlerUpdateRole(t *testing.T) {
 		logger.Error().Printf("error when json marshal: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPatch, "/roles/:id", strings.NewReader(string(out)))
+	req := httptest.NewRequest(http.MethodPatch, "/users/:id", strings.NewReader(string(out)))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -260,20 +260,20 @@ func TestHandlerUpdateRole(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			if assert.NoError(t, userHandler.Update(c)) {
-				var role domain.User
-				_ = json.Unmarshal(rec.Body.Bytes(), &role)
+				var user domain.User
+				_ = json.Unmarshal(rec.Body.Bytes(), &user)
 
 				assert.Equal(t, http.StatusOK, rec.Code)
-				assert.Equal(t, tc.res, &role)
+				assert.Equal(t, tc.res, &user)
 			}
 		})
 	}
 }
 
-func TestHandlerDeleteRole(t *testing.T) {
+func TestHandlerDeleteUser(t *testing.T) {
 	e := echo.New()
 
-	req := httptest.NewRequest(http.MethodDelete, "/roles/:id", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/users/:id", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -297,11 +297,11 @@ func TestHandlerDeleteRole(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			if assert.NoError(t, userHandler.Delete(c)) {
-				var role domain.User
-				_ = json.Unmarshal(rec.Body.Bytes(), &role)
+				var user domain.User
+				_ = json.Unmarshal(rec.Body.Bytes(), &user)
 
 				assert.Equal(t, http.StatusNoContent, rec.Code)
-				assert.Equal(t, tc.res, &role)
+				assert.Equal(t, tc.res, &user)
 			}
 		})
 	}

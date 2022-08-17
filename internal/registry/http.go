@@ -20,7 +20,7 @@ func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	g := e.Group("/api")
 
 	authGroup := g.Group("")
-	authHttp.NewAuthHandler(authGroup, uc.AuthUsecase)
+	authHttp.NewHandler(authGroup, uc.AuthUsecase)
 
 	DefaultJWTConfig := middleware.JWTConfig{
 		TokenLookup: "header:" + echo.HeaderAuthorization,
