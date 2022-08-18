@@ -32,9 +32,6 @@ Start development:
 # Copy env
 cp .env.example .env
 
-# setup USER_ID, GROUP_ID
-sed -i "s/USER_ID/$(id -u)/g;s/GROUP_ID/$(id -g)/g" .env
-
 # Start docker
 docker compose up -d
 
@@ -59,19 +56,27 @@ make build-mock
 # Check Unit test
 make test
 
+# Run seed data
+go run cmd/seed/main.go
+
 # Check with CURL
-curl -X POST \
-  http://localhost:8080/api/roles \
-  -H 'accept: application/json' \
-  -H 'content-type: application/json' \
-  -d '{
-    "name": "Administractor"
+curl --location --request POST 'localhost:8080/api/login' \
+--header 'accept: application/json' \
+--header 'content-type: application/json' \
+--data-raw '{
+    "email": "admin@example.com",
+    "password" : "Aa@123456"
 }'
 
-curl -X GET \
-  http://localhost:8080/api/roles \
-  -H 'accept: application/json' \
-  -H 'content-type: application/json'
+curl --location --request POST 'localhost:8080/api/register' \
+--header 'accept: application/json' \
+--header 'content-type: application/json' \
+--data-raw '{
+    "email": "user2@example.com",
+    "password" : "password",
+    "role_id": 1,
+    "name": "user2"
+}'2
 ```
 
 ## Project structure

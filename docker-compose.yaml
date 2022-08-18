@@ -9,7 +9,6 @@ services:
       dockerfile: ./.docker/local/go/Dockerfile
     platform: linux/amd64
     image: go-app:1.8
-    user: ${DOCKER_UID}:${DOCKER_GID}
     networks:
       - go-app-net
     stdin_open: true
