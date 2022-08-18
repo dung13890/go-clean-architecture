@@ -31,7 +31,18 @@ func (hl *RoleHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	roles, _ := hl.Usecase.Fetch(ctx)
 
-	return c.JSON(http.StatusOK, roles)
+	rolesDto := []RoleResponse{}
+	for _, role := range roles {
+		rolesDto = append(rolesDto, RoleResponse{
+			ID:        role.ID,
+			Name:      role.Name,
+			Slug:      role.Slug,
+			CreatedAt: role.CreatedAt,
+			UpdatedAt: role.UpdatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, rolesDto)
 }
 
 // Show will Find data
@@ -46,7 +57,13 @@ func (hl *RoleHandler) Show(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	return c.JSON(http.StatusOK, RoleResponse{
+		ID:        role.ID,
+		Name:      role.Name,
+		Slug:      role.Slug,
+		CreatedAt: role.CreatedAt,
+		UpdatedAt: role.UpdatedAt,
+	})
 }
 
 // Store will create data
@@ -61,14 +78,12 @@ func (hl *RoleHandler) Store(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, role)
+	return c.JSON(http.StatusCreated, StatusResponse{Status: true})
 }
 
 // Update will update data
 func (hl *RoleHandler) Update(c echo.Context) error {
-	role := &domain.Role{}
-
-	return c.JSON(http.StatusOK, role)
+	return c.JSON(http.StatusOK, StatusResponse{Status: true})
 }
 
 // Delete will delete data

@@ -57,14 +57,26 @@ func TestHandlerIndexRole(t *testing.T) {
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				_, err := strconv.Atoi("test")
-				usecaseMock.EXPECT().Fetch(context.Background()).Times(1).Return([]domain.Role{}, nil)
+				usecaseMock.
+					EXPECT().
+					Fetch(context.Background()).
+					Times(1).
+					Return([]domain.Role{
+						{
+							Name: "name",
+						},
+					}, nil)
 
 				if assert.Error(t, err, handler.Index(c)) {
-					var role domain.Role
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+					var rolesDto []roleHttp.RoleResponse
+					_ = json.Unmarshal(rec.Body.Bytes(), &rolesDto)
 
 					assert.Equal(t, http.StatusOK, rec.Code)
-					assert.Equal(t, &domain.Role{}, &role)
+					assert.Equal(t, []roleHttp.RoleResponse{
+						{
+							Name: "name",
+						},
+					}, rolesDto)
 				}
 			},
 		},
@@ -86,7 +98,7 @@ func TestHandlerShowRole(t *testing.T) {
 	defer ctrl.Finish()
 
 	usecaseMock := mockDomain.NewMockRoleUsecase(ctrl)
-	userRoleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
+	roleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
 
 	tests := []testCase{
 		{
@@ -96,12 +108,12 @@ func TestHandlerShowRole(t *testing.T) {
 				t.Helper()
 				usecaseMock.EXPECT().Find(context.Background(), 1).Times(1).Return(&domain.Role{}, nil)
 
-				if assert.NoError(t, userRoleHandler.Show(c)) {
-					var role domain.Role
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+				if assert.NoError(t, roleHandler.Show(c)) {
+					role := &roleHttp.RoleResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), role)
 
 					assert.Equal(t, http.StatusOK, rec.Code)
-					assert.Equal(t, &domain.Role{}, &role)
+					assert.Equal(t, &roleHttp.RoleResponse{}, role)
 				}
 			},
 		},
@@ -112,12 +124,12 @@ func TestHandlerShowRole(t *testing.T) {
 				t.Helper()
 				_, err := strconv.Atoi("test")
 
-				if assert.Error(t, err, userRoleHandler.Show(c)) {
-					var role domain.Role
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+				if assert.Error(t, err, roleHandler.Show(c)) {
+					role := &roleHttp.RoleResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), role)
 
 					assert.Equal(t, http.StatusNotFound, rec.Code)
-					assert.Equal(t, &domain.Role{}, &role)
+					assert.Equal(t, &roleHttp.RoleResponse{}, role)
 				}
 			},
 		},
@@ -128,12 +140,12 @@ func TestHandlerShowRole(t *testing.T) {
 				t.Helper()
 				usecaseMock.EXPECT().Find(context.Background(), 2).Times(1).Return(&domain.Role{}, errNotFound)
 
-				if assert.Error(t, errNotFound, userRoleHandler.Show(c)) {
-					var role domain.Role
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+				if assert.Error(t, errNotFound, roleHandler.Show(c)) {
+					role := &roleHttp.RoleResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), role)
 
 					assert.Equal(t, http.StatusNotFound, rec.Code)
-					assert.Equal(t, &domain.Role{}, &role)
+					assert.Equal(t, &roleHttp.RoleResponse{}, role)
 				}
 			},
 		},
@@ -165,7 +177,7 @@ func TestHandlerStoreRole(t *testing.T) {
 
 	usecaseMock := mockDomain.NewMockRoleUsecase(ctrl)
 
-	userRoleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
+	roleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
 
 	tests := []testCase{
 		{
@@ -177,12 +189,12 @@ func TestHandlerStoreRole(t *testing.T) {
 				_ = json.Unmarshal([]byte(`{}`), &roleMock)
 				usecaseMock.EXPECT().Store(context.Background(), &roleMock).Times(1).Return(nil).AnyTimes()
 
-				if assert.NoError(t, userRoleHandler.Store(c)) {
-					role := domain.Role{}
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
+				if assert.NoError(t, roleHandler.Store(c)) {
+					statusResponse := &roleHttp.StatusResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), statusResponse)
 
 					assert.Equal(t, http.StatusCreated, rec.Code)
-					assert.Equal(t, &domain.Role{}, &role)
+					assert.Equal(t, &roleHttp.StatusResponse{Status: true}, statusResponse)
 				}
 			},
 		},
@@ -191,10 +203,7 @@ func TestHandlerStoreRole(t *testing.T) {
 			argStore: fmt.Sprintf("%v", domain.Role{}),
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				if assert.NoError(t, userRoleHandler.Store(c)) {
-					var role domain.Role
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
-
+				if assert.NoError(t, roleHandler.Store(c)) {
 					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 				}
 			},
@@ -209,10 +218,7 @@ func TestHandlerStoreRole(t *testing.T) {
 				roleMock.Name = "test"
 
 				usecaseMock.EXPECT().Store(c.Request().Context(), &roleMock).Return(errNotFound).Times(1)
-				if assert.NoError(t, userRoleHandler.Store(c)) {
-					var role domain.Role
-					_ = json.Unmarshal(rec.Body.Bytes(), &role)
-
+				if assert.NoError(t, roleHandler.Store(c)) {
 					assert.Equal(t, http.StatusBadRequest, rec.Code)
 				}
 			},
@@ -249,12 +255,12 @@ func TestHandlerUpdateRole(t *testing.T) {
 
 	usecaseMock := mockDomain.NewMockRoleUsecase(ctrl)
 
-	userRoleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
+	roleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
 
 	tests := []testCase{
 		{
 			name:       "OK",
-			res:        &domain.Role{},
+			res:        &roleHttp.StatusResponse{Status: true},
 			statusCode: http.StatusOK,
 			err:        nil,
 		},
@@ -262,12 +268,12 @@ func TestHandlerUpdateRole(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			if assert.NoError(t, userRoleHandler.Update(c)) {
-				var role domain.Role
-				_ = json.Unmarshal(rec.Body.Bytes(), &role)
+			if assert.NoError(t, roleHandler.Update(c)) {
+				statusResponse := &roleHttp.StatusResponse{}
+				_ = json.Unmarshal(rec.Body.Bytes(), statusResponse)
 
 				assert.Equal(t, http.StatusOK, rec.Code)
-				assert.Equal(t, tc.res, &role)
+				assert.Equal(t, tc.res, statusResponse)
 			}
 		})
 	}
@@ -286,12 +292,12 @@ func TestHandlerDeleteRole(t *testing.T) {
 
 	usecaseMock := mockDomain.NewMockRoleUsecase(ctrl)
 
-	userRoleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
+	roleHandler := roleHttp.RoleHandler{Usecase: usecaseMock}
 
 	tests := []testCase{
 		{
 			name:       "OK",
-			res:        &domain.Role{},
+			res:        nil,
 			statusCode: http.StatusNoContent,
 			err:        nil,
 		},
@@ -299,12 +305,8 @@ func TestHandlerDeleteRole(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			if assert.NoError(t, userRoleHandler.Delete(c)) {
-				var role domain.Role
-				_ = json.Unmarshal(rec.Body.Bytes(), &role)
-
+			if assert.NoError(t, roleHandler.Delete(c)) {
 				assert.Equal(t, http.StatusNoContent, rec.Code)
-				assert.Equal(t, tc.res, &role)
 			}
 		})
 	}

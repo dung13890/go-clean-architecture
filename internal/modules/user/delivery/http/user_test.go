@@ -16,7 +16,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	mockDomain "go-app/internal/domain/mock"
 	userHttp "go-app/internal/modules/user/delivery/http"
@@ -26,7 +25,6 @@ var errNotFound = errors.New("not found")
 
 type testCase struct {
 	name       string
-	mock       func(uc *mockDomain.MockUserUsecase)
 	res        interface{}
 	args       interface{}
 	argStore   string
@@ -36,39 +34,57 @@ type testCase struct {
 }
 
 func TestHandlerIndexUser(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/users", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	t.Parallel()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	usecaseMock := mockDomain.NewMockUserUsecase(ctrl)
-
-	userHandler := userHttp.UserHandler{Usecase: usecaseMock}
+	handler := userHttp.UserHandler{
+		Usecase: usecaseMock,
+	}
 
 	tests := []testCase{
 		{
-			name: "OK",
-			mock: func(uc *mockDomain.MockUserUsecase) {
-				uc.EXPECT().Fetch(context.Background()).Times(1).Return([]domain.User{}, nil)
-			},
-			res:        c.JSON(http.StatusOK, []domain.User{}),
+			name:       "OK",
+			res:        []domain.User{},
 			statusCode: http.StatusOK,
 			err:        nil,
+			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
+				t.Helper()
+				_, err := strconv.Atoi("test")
+				usecaseMock.
+					EXPECT().
+					Fetch(context.Background()).
+					Times(1).
+					Return([]domain.User{
+						{
+							Name: "name",
+						},
+					}, nil)
+
+				if assert.Error(t, err, handler.Index(c)) {
+					var usersDto []userHttp.UserResponse
+					_ = json.Unmarshal(rec.Body.Bytes(), &usersDto)
+
+					assert.Equal(t, http.StatusOK, rec.Code)
+					assert.Equal(t, []userHttp.UserResponse{
+						{
+							Name: "name",
+						},
+					}, usersDto)
+				}
+			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.mock(usecaseMock)
-
-			err := userHandler.Index(c)
-
-			require.Equal(t, c.Response().Status, tc.statusCode)
-			require.ErrorIs(t, err, tc.err)
+			tc.checkEqual(t, rec, c)
 		})
 	}
 }
@@ -94,11 +110,11 @@ func TestHandlerShowUser(t *testing.T) {
 				usecaseMock.EXPECT().Find(context.Background(), 1).Times(1).Return(&domain.User{}, nil)
 
 				if assert.NoError(t, userHandler.Show(c)) {
-					var user domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &user)
+					user := &userHttp.UserResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), user)
 
 					assert.Equal(t, http.StatusOK, rec.Code)
-					assert.Equal(t, &domain.User{}, &user)
+					assert.Equal(t, &userHttp.UserResponse{}, user)
 				}
 			},
 		},
@@ -110,11 +126,11 @@ func TestHandlerShowUser(t *testing.T) {
 				_, err := strconv.Atoi("test")
 
 				if assert.Error(t, err, userHandler.Show(c)) {
-					var user domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &user)
+					user := &userHttp.UserResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), user)
 
 					assert.Equal(t, http.StatusNotFound, rec.Code)
-					assert.Equal(t, &domain.User{}, &user)
+					assert.Equal(t, &userHttp.UserResponse{}, user)
 				}
 			},
 		},
@@ -126,11 +142,11 @@ func TestHandlerShowUser(t *testing.T) {
 				usecaseMock.EXPECT().Find(context.Background(), 2).Times(1).Return(&domain.User{}, errNotFound)
 
 				if assert.Error(t, errNotFound, userHandler.Show(c)) {
-					var user domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &user)
+					user := &userHttp.UserResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), user)
 
 					assert.Equal(t, http.StatusNotFound, rec.Code)
-					assert.Equal(t, &domain.User{}, &user)
+					assert.Equal(t, &userHttp.UserResponse{}, user)
 				}
 			},
 		},
@@ -175,11 +191,11 @@ func TestHandlerStoreUser(t *testing.T) {
 				usecaseMock.EXPECT().Store(context.Background(), &userMock).Times(1).Return(nil).AnyTimes()
 
 				if assert.NoError(t, userHandler.Store(c)) {
-					user := domain.User{}
-					_ = json.Unmarshal(rec.Body.Bytes(), &user)
+					statusResponse := &userHttp.StatusResponse{}
+					_ = json.Unmarshal(rec.Body.Bytes(), statusResponse)
 
 					assert.Equal(t, http.StatusCreated, rec.Code)
-					assert.Equal(t, &domain.User{}, &user)
+					assert.Equal(t, &userHttp.StatusResponse{Status: true}, statusResponse)
 				}
 			},
 		},
@@ -189,9 +205,6 @@ func TestHandlerStoreUser(t *testing.T) {
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				if assert.NoError(t, userHandler.Store(c)) {
-					var user domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &user)
-
 					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 				}
 			},
@@ -207,9 +220,6 @@ func TestHandlerStoreUser(t *testing.T) {
 
 				usecaseMock.EXPECT().Store(c.Request().Context(), &userMock).Return(errNotFound).Times(1)
 				if assert.NoError(t, userHandler.Store(c)) {
-					var user domain.User
-					_ = json.Unmarshal(rec.Body.Bytes(), &user)
-
 					assert.Equal(t, http.StatusBadRequest, rec.Code)
 				}
 			},
@@ -251,7 +261,7 @@ func TestHandlerUpdateUser(t *testing.T) {
 	tests := []testCase{
 		{
 			name:       "OK",
-			res:        &domain.User{},
+			res:        &userHttp.StatusResponse{Status: true},
 			statusCode: http.StatusOK,
 			err:        nil,
 		},
@@ -260,11 +270,11 @@ func TestHandlerUpdateUser(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			if assert.NoError(t, userHandler.Update(c)) {
-				var user domain.User
-				_ = json.Unmarshal(rec.Body.Bytes(), &user)
+				statusResponse := &userHttp.StatusResponse{}
+				_ = json.Unmarshal(rec.Body.Bytes(), statusResponse)
 
 				assert.Equal(t, http.StatusOK, rec.Code)
-				assert.Equal(t, tc.res, &user)
+				assert.Equal(t, tc.res, statusResponse)
 			}
 		})
 	}
@@ -288,7 +298,7 @@ func TestHandlerDeleteUser(t *testing.T) {
 	tests := []testCase{
 		{
 			name:       "OK",
-			res:        &domain.User{},
+			res:        nil,
 			statusCode: http.StatusNoContent,
 			err:        nil,
 		},
@@ -297,11 +307,7 @@ func TestHandlerDeleteUser(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			if assert.NoError(t, userHandler.Delete(c)) {
-				var user domain.User
-				_ = json.Unmarshal(rec.Body.Bytes(), &user)
-
 				assert.Equal(t, http.StatusNoContent, rec.Code)
-				assert.Equal(t, tc.res, &user)
 			}
 		})
 	}
