@@ -5,7 +5,6 @@ import (
 	"go-app/config"
 	"go-app/internal/domain"
 	"go-app/pkg/errors"
-	"go-app/pkg/logger"
 
 	"github.com/spf13/viper"
 
@@ -50,7 +49,6 @@ func Seed(dbConfig config.Database) error {
 	}
 
 	for _, u := range data.Users {
-		logger.Info().Println("User: ", u)
 		err = userRepo.Store(context.Background(), &u)
 		if err != nil {
 			return errors.Wrap(err)

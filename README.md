@@ -44,6 +44,9 @@ make create_example_table.sql
 # Migrate
 go run cmd/migrate/main.go
 
+# Run seed data
+go run cmd/seed/main.go
+
 # Start http server
 air -c cmd/app/.air.toml
 
@@ -56,27 +59,24 @@ make build-mock
 # Check Unit test
 make test
 
-# Run seed data
-go run cmd/seed/main.go
-
 # Check with CURL
-curl --location --request POST 'localhost:8080/api/login' \
---header 'accept: application/json' \
---header 'content-type: application/json' \
---data-raw '{
-    "email": "admin@example.com",
-    "password" : "Aa@123456"
-}'
-
-curl --location --request POST 'localhost:8080/api/register' \
---header 'accept: application/json' \
---header 'content-type: application/json' \
---data-raw '{
-    "email": "user2@example.com",
+curl -X POST 'localhost:8080/api/register' \
+ -H 'accept: application/json' \
+ -H 'content-type: application/json' \
+ -d '{
+    "email": "user@example.com",
     "password" : "password",
     "role_id": 1,
-    "name": "user2"
-}'2
+    "name": "user"
+}'
+
+curl -X POST 'localhost:8080/api/login' \
+ -H 'accept: application/json' \
+ -H 'content-type: application/json' \
+ -d '{
+    "email": "user@example.com",
+    "password" : "password"
+}'
 ```
 
 ## Project structure

@@ -31,7 +31,19 @@ func (hl *UserHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	users, _ := hl.Usecase.Fetch(ctx)
 
-	return c.JSON(http.StatusOK, users)
+	usersDto := []UserResponse{}
+	for _, user := range users {
+		usersDto = append(usersDto, UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			RoleID:    user.RoleID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, usersDto)
 }
 
 // Show will Find data
@@ -46,7 +58,14 @@ func (hl *UserHandler) Show(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		RoleID:    user.RoleID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	})
 }
 
 // Store will create data
@@ -60,14 +79,12 @@ func (hl *UserHandler) Store(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	return c.JSON(http.StatusCreated, StatusResponse{Status: true})
 }
 
 // Update will update data
 func (hl *UserHandler) Update(c echo.Context) error {
-	user := &domain.User{}
-
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, StatusResponse{Status: true})
 }
 
 // Delete will delete data

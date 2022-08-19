@@ -17,3 +17,8 @@ type RoleResponse struct {
 type ErrorResponse struct {
 	Message string `json:"message"`
 }
+
+// StatusResponse is struc when success
+type StatusResponse struct {
+	Status bool `json:"status"`
+}
