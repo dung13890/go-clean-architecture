@@ -24,48 +24,40 @@ func NewHandler(g *echo.Group, uc domain.AuthUsecase) {
 
 // Login for user
 func (hl *AuthHandler) Login(c echo.Context) error {
-	user := &domain.User{}
-	if err := c.Bind(user); err != nil {
+	userReq := new(UserLoginRequest)
+	if err := c.Bind(userReq); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
+	if err := c.Validate(userReq); err != nil {
+		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+	}
+
 	ctx := c.Request().Context()
-	claims, tokenStr, err := hl.Usecase.Login(ctx, user)
+	claims, tokenStr, err := hl.Usecase.Login(ctx, ConvertLoginRequestToEntity(userReq))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, UserLoginResponse{
-		ID:     claims.ID,
-		Name:   claims.Name,
-		Email:  claims.Email,
-		RoleID: claims.RoleID,
-		Auth: AuthResponse{
-			AccessToken: tokenStr,
-			ExpiresAt:   claims.StandardClaims.ExpiresAt,
-		},
-	})
+	return c.JSON(http.StatusOK, ConvertUserToLoginResponse(*claims, tokenStr))
 }
 
 // Register for user
 func (hl *AuthHandler) Register(c echo.Context) error {
-	user := &domain.User{}
-	if err := c.Bind(user); err != nil {
+	userReq := &UserRegisterRequest{}
+	if err := c.Bind(userReq); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
+	if err := c.Validate(userReq); err != nil {
+		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+	}
+
 	ctx := c.Request().Context()
-	user, err := hl.Usecase.Register(ctx, user)
+	user, err := hl.Usecase.Register(ctx, ConvertRegisterRequestToeEntity(userReq))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, UserRegisterResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		RoleID:    user.RoleID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	})
+	return c.JSON(http.StatusCreated, ConvertUserToRegisterResponse(user))
 }

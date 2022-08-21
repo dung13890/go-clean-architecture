@@ -31,18 +31,7 @@ func (hl *RoleHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	roles, _ := hl.Usecase.Fetch(ctx)
 
-	rolesDto := []RoleResponse{}
-	for _, role := range roles {
-		rolesDto = append(rolesDto, RoleResponse{
-			ID:        role.ID,
-			Name:      role.Name,
-			Slug:      role.Slug,
-			CreatedAt: role.CreatedAt,
-			UpdatedAt: role.UpdatedAt,
-		})
-	}
-
-	return c.JSON(http.StatusOK, rolesDto)
+	return c.JSON(http.StatusOK, ConvertRolesToResponse(roles))
 }
 
 // Show will Find data
@@ -57,21 +46,22 @@ func (hl *RoleHandler) Show(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, RoleResponse{
-		ID:        role.ID,
-		Name:      role.Name,
-		Slug:      role.Slug,
-		CreatedAt: role.CreatedAt,
-		UpdatedAt: role.UpdatedAt,
-	})
+	return c.JSON(http.StatusOK, ConvertRoleToResponse(role))
 }
 
 // Store will create data
 func (hl *RoleHandler) Store(c echo.Context) error {
-	role := &domain.Role{}
-	if err := c.Bind(role); err != nil {
+	roleReq := new(RoleRequest)
+	if err := c.Bind(roleReq); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
+
+	err := c.Validate(roleReq)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+	}
+
+	role := ConvertRequestToEntity(roleReq)
 
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, role); err != nil {

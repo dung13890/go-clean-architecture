@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go-app/internal/domain"
 	"go-app/pkg/logger"
+	"go-app/pkg/validate"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -21,7 +22,10 @@ import (
 	userHttp "go-app/internal/modules/user/delivery/http"
 )
 
-var errNotFound = errors.New("not found")
+var (
+	errNotFound      = errors.New("not found")
+	errCantStoreUser = errors.New("can't store user")
+)
 
 type testCase struct {
 	name       string
@@ -39,6 +43,7 @@ func TestHandlerIndexUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	e := echo.New()
+	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodGet, "/users", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -91,6 +96,8 @@ func TestHandlerIndexUser(t *testing.T) {
 
 func TestHandlerShowUser(t *testing.T) {
 	e := echo.New()
+
+	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodGet, "/users/:id", nil)
 
 	t.Parallel()
@@ -107,7 +114,8 @@ func TestHandlerShowUser(t *testing.T) {
 			args: 1,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				usecaseMock.EXPECT().Find(context.Background(), 1).Times(1).Return(&domain.User{}, nil)
+				usecaseMock.EXPECT().Find(context.Background(), 1).Times(1).
+					Return(&domain.User{}, nil)
 
 				if assert.NoError(t, userHandler.Show(c)) {
 					user := &userHttp.UserResponse{}
@@ -139,7 +147,8 @@ func TestHandlerShowUser(t *testing.T) {
 			args: 2,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				usecaseMock.EXPECT().Find(context.Background(), 2).Times(1).Return(&domain.User{}, errNotFound)
+				usecaseMock.EXPECT().Find(context.Background(), 2).Times(1).
+					Return(&domain.User{}, errNotFound)
 
 				if assert.Error(t, errNotFound, userHandler.Show(c)) {
 					user := &userHttp.UserResponse{}
@@ -172,6 +181,7 @@ func TestHandlerShowUser(t *testing.T) {
 func TestHandlerStoreUser(t *testing.T) {
 	e := echo.New()
 
+	e.Validator = validate.NewValidate()
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -183,12 +193,14 @@ func TestHandlerStoreUser(t *testing.T) {
 	tests := []testCase{
 		{
 			name:     "OK",
-			argStore: `{}`,
+			argStore: `{"name":"user", "email":"user@example.com","role_id":1, "password":"abc@123"}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				userMock := domain.User{}
-				_ = json.Unmarshal([]byte(`{}`), &userMock)
-				usecaseMock.EXPECT().Store(context.Background(), &userMock).Times(1).Return(nil).AnyTimes()
+				_ = json.Unmarshal([]byte(`{"name":"user", "email":"user@example.com",
+								"role_id":1, "password":"abc@123"}`), &userMock)
+				usecaseMock.EXPECT().Store(context.Background(), &userMock).Times(1).
+					Return(nil).AnyTimes()
 
 				if assert.NoError(t, userHandler.Store(c)) {
 					statusResponse := &userHttp.StatusResponse{}
@@ -211,14 +223,30 @@ func TestHandlerStoreUser(t *testing.T) {
 		},
 		{
 			name:     "BAD REQUEST",
-			argStore: `{"Name": "test"}`,
+			argStore: `{}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				userMock := domain.User{}
 				_ = json.Unmarshal([]byte(`{}`), &userMock)
-				userMock.Name = "test"
 
-				usecaseMock.EXPECT().Store(c.Request().Context(), &userMock).Return(errNotFound).Times(1)
+				usecaseMock.EXPECT().Store(c.Request().Context(), &userMock).Return(errNotFound).
+					Times(1).AnyTimes()
+				if assert.NoError(t, userHandler.Store(c)) {
+					assert.Equal(t, http.StatusBadRequest, rec.Code)
+				}
+			},
+		},
+		{
+			name:     "BAD REQUEST",
+			argStore: `{"name":"user", "email":"user2@example.com","role_id":2, "password":"abc@123"}`,
+			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
+				t.Helper()
+				userMock := domain.User{}
+				_ = json.Unmarshal([]byte(`{"name":"user", "email":"user2@example.com",
+								"role_id":2, "password":"abc@123"}`), &userMock)
+
+				usecaseMock.EXPECT().Store(c.Request().Context(), &userMock).
+					Return(errCantStoreUser).Times(1)
 				if assert.NoError(t, userHandler.Store(c)) {
 					assert.Equal(t, http.StatusBadRequest, rec.Code)
 				}
@@ -241,6 +269,7 @@ func TestHandlerStoreUser(t *testing.T) {
 func TestHandlerUpdateUser(t *testing.T) {
 	e := echo.New()
 
+	e.Validator = validate.NewValidate()
 	out, err := json.Marshal(domain.User{})
 	if err != nil {
 		logger.Error().Printf("error when json marshal: %v", err)
@@ -283,6 +312,7 @@ func TestHandlerUpdateUser(t *testing.T) {
 func TestHandlerDeleteUser(t *testing.T) {
 	e := echo.New()
 
+	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodDelete, "/users/:id", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -316,6 +346,8 @@ func TestHandlerDeleteUser(t *testing.T) {
 func TestNewUserHandler(t *testing.T) {
 	t.Parallel()
 	e := echo.New()
+
+	e.Validator = validate.NewValidate()
 	g := e.Group("/v1")
 
 	ctrl := gomock.NewController(t)

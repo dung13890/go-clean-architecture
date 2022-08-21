@@ -6,6 +6,7 @@ import (
 	authHttp "go-app/internal/modules/auth/delivery/http"
 	roleHttp "go-app/internal/modules/role/delivery/http"
 	userHttp "go-app/internal/modules/user/delivery/http"
+	"go-app/pkg/validate"
 	"net/http"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Validator = validate.NewValidate()
 	g := e.Group("/api")
 
 	authGroup := g.Group("")
