@@ -22,7 +22,7 @@ func NewRepository(db *gorm.DB) domain.UserRepository {
 // Fetch will fetch content from db
 func (rp *UserRepository) Fetch(c context.Context) ([]domain.User, error) {
 	users := []domain.User{}
-	if err := rp.DB.Debug().Find(&users).Error; err != nil {
+	if err := rp.DB.Find(&users).Error; err != nil {
 		return users, errors.Wrap(err)
 	}
 
@@ -32,7 +32,7 @@ func (rp *UserRepository) Fetch(c context.Context) ([]domain.User, error) {
 // Find will find content from db
 func (rp *UserRepository) Find(c context.Context, id int) (*domain.User, error) {
 	user := domain.User{}
-	if err := rp.DB.Debug().Where("id = ?", id).First(&user).Error; err != nil {
+	if err := rp.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, errors.Wrap(err)
 	}
 
@@ -46,7 +46,7 @@ func (rp *UserRepository) Store(c context.Context, user *domain.User) error {
 		return errors.Wrap(err)
 	}
 	user.Password = passHash
-	if err := rp.DB.Debug().Create(user).Error; err != nil {
+	if err := rp.DB.Create(user).Error; err != nil {
 		return errors.Wrap(err)
 	}
 
@@ -56,7 +56,7 @@ func (rp *UserRepository) Store(c context.Context, user *domain.User) error {
 // Search is a function that returns a list of users filtered by query
 func (rp *UserRepository) Search(ctx context.Context, q domain.UserQueryParam) ([]domain.User, error) {
 	var users []domain.User
-	if err := rp.DB.Debug().Where("email = ? ", q.Email).Find(&users).Error; err != nil {
+	if err := rp.DB.Where("email = ? ", q.Email).Find(&users).Error; err != nil {
 		return users, errors.Wrap(err)
 	}
 
@@ -66,7 +66,7 @@ func (rp *UserRepository) Search(ctx context.Context, q domain.UserQueryParam) (
 // FindByQuery is a function that returns a users filtered by query
 func (rp *UserRepository) FindByQuery(ctx context.Context, q domain.UserQueryParam) (*domain.User, error) {
 	user := &domain.User{}
-	if err := rp.DB.Debug().Where("email = ? ", q.Email).First(&user).Error; err != nil {
+	if err := rp.DB.Where("email = ? ", q.Email).First(&user).Error; err != nil {
 		return nil, errors.Wrap(err)
 	}
 

@@ -1,10 +1,11 @@
-package postgres
+package app
 
 import (
 	"context"
 	"go-app/config"
 	"go-app/internal/domain"
 	"go-app/pkg/errors"
+	"go-app/pkg/postgres"
 
 	"github.com/spf13/viper"
 
@@ -21,7 +22,7 @@ type seedData struct {
 
 // Seed is function that seed data
 func Seed(dbConfig config.Database) error {
-	db, err := NewGormDB(dbConfig)
+	db, err := postgres.NewGormDB(dbConfig)
 	if err != nil {
 		return errors.Wrap(err)
 	}

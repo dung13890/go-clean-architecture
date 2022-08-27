@@ -2,8 +2,8 @@ package main
 
 import (
 	"go-app/config"
+	"go-app/internal/app"
 	"go-app/pkg/logger"
-	"go-app/pkg/postgres"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 	}
 
 	dbConfig := config.GetDBConfig()
-	if err := postgres.Seed(dbConfig); err != nil {
+	if err := app.Seed(dbConfig); err != nil {
 		logger.Error().Fatal(err)
 	}
 }

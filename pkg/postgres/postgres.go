@@ -9,6 +9,7 @@ import (
 	// for postgresql driver.
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // NewGormDB setup Gorm
@@ -21,8 +22,15 @@ func NewGormDB(db config.Database) (*gorm.DB, error) {
 		db.DBName,
 		db.SSLMode,
 	)
+	logLevel := logger.Silent
+	if db.Debug {
+		// I use an env variable LOG_SQL to set logSql to either true or false.
+		logLevel = logger.Info
+	}
 
-	dbConnect, err := gorm.Open(postgres.Open(uri), &gorm.Config{})
+	dbConnect, err := gorm.Open(postgres.Open(uri), &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
+	})
 	if err != nil {
 		return nil, errors.Wrap(err)
 	}
