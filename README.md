@@ -163,6 +163,7 @@ func (hl *roleHandler) Index(c echo.Context) error {
 
 ## Tools Used
 - [https://gorm.io](https://gorm.io)
+- [validator](https://github.com/go-playground/validator)
 - [spf13/viper](https://github.com/spf13/viper)
 - [golang/mock](https://github.com/golang/mock)
 - [Echo](https://echo.labstack.com)

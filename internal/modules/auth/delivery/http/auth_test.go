@@ -21,9 +21,15 @@ import (
 
 var (
 	errNotFound           = errors.New("not found")
-	errRegisterInvalidate = errors.New("name must have a value,email must have a value,roleid must have a" +
-		" value,password must have a value")
-	errLoginInvalidate = errors.New("email must have a value,password must have a value")
+	errRegisterInvalidate = errors.New(strings.Join([]string{
+		"Name must have a value!;Email must have a value!",
+		"RoleID must have a value!",
+		"Password must have a value!",
+	}, ";"))
+	errLoginInvalidate = errors.New(strings.Join([]string{
+		"Email must have a value!",
+		"Password must have a value!",
+	}, ";"))
 )
 
 type testCase struct {
@@ -36,7 +42,6 @@ func TestNewAuthHandler(t *testing.T) {
 	t.Parallel()
 	e := echo.New()
 	g := e.Group("/v1")
-	e.Validator = validate.NewValidate()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -92,7 +97,7 @@ func TestHandlerRegisterUser(t *testing.T) {
 			},
 		},
 		{
-			name:     "BAD REQUEST",
+			name:     "Validate",
 			argStore: `{}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
@@ -105,7 +110,7 @@ func TestHandlerRegisterUser(t *testing.T) {
 					errorResponse := &authHttp.ErrorResponse{}
 					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
 
-					assert.Equal(t, http.StatusBadRequest, rec.Code)
+					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 					assert.Equal(t, &authHttp.ErrorResponse{Message: errRegisterInvalidate.Error()},
 						errorResponse)
 				}
@@ -197,7 +202,7 @@ func TestHandlerLoginUser(t *testing.T) {
 			},
 		},
 		{
-			name:     "BAD REQUEST",
+			name:     "Validate",
 			argStore: `{}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
@@ -210,7 +215,7 @@ func TestHandlerLoginUser(t *testing.T) {
 					errorResponse := &authHttp.ErrorResponse{}
 					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
 
-					assert.Equal(t, http.StatusBadRequest, rec.Code)
+					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 					assert.Equal(t, &authHttp.ErrorResponse{Message: errLoginInvalidate.Error()},
 						errorResponse)
 				}

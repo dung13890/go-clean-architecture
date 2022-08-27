@@ -1,7 +1,6 @@
 package validate
 
 import (
-	"bytes"
 	"errors"
 	"strings"
 
@@ -56,7 +55,7 @@ func (v *CustomValidate) Validate(u interface{}) error {
 	})
 
 	_ = v.validate.RegisterTranslation("min", trans, func(ut uniTranslator.Translator) error {
-		return ut.Add("min", "{0} is less than min", true)
+		return ut.Add("min", "{0} is less than min!", true)
 	}, func(ut uniTranslator.Translator, fe validator.FieldError) string {
 		t, _ := ut.T("min", fe.Field())
 
@@ -64,31 +63,26 @@ func (v *CustomValidate) Validate(u interface{}) error {
 	})
 
 	_ = v.validate.RegisterTranslation("max", trans, func(ut uniTranslator.Translator) error {
-		return ut.Add("max", "{0} is greater than max", true)
+		return ut.Add("max", "{0} is greater than max!", true)
 	}, func(ut uniTranslator.Translator, fe validator.FieldError) string {
 		t, _ := ut.T("max", fe.Field())
 
 		return t
 	})
 
-	err := v.validate.Struct(u)
-	//nolint:errorlint,forcetypeassert,goerr113
-	if err != nil {
-		var errStr bytes.Buffer
-		for index, e := range err.(validator.ValidationErrors) {
-			if index+1 == len(err.(validator.ValidationErrors)) {
-				errStr.WriteString(formatString(e.Translate(trans)))
-			} else {
-				errStr.WriteString(formatString(e.Translate(trans)) + ",")
+	if err := v.validate.Struct(u); err != nil {
+		errArr := []string{}
+		validationErrs := validator.ValidationErrors{}
+		if errors.As(err, &validationErrs) {
+			for _, e := range validationErrs {
+				errArr = append(errArr, e.Translate(trans))
 			}
 		}
 
-		return errors.New(errStr.String())
+		errStr := strings.Join(errArr, ";")
+		//nolint:goerr113
+		return errors.New(errStr)
 	}
 
 	return nil
-}
-
-func formatString(str string) string {
-	return strings.ToLower(strings.ReplaceAll(str, "!", ""))
 }

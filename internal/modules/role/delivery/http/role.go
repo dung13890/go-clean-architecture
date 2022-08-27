@@ -58,7 +58,7 @@ func (hl *RoleHandler) Store(c echo.Context) error {
 
 	err := c.Validate(roleReq)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
 	role := ConvertRequestToEntity(roleReq)
