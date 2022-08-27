@@ -1,5 +1,5 @@
 %.sql:
-	$(eval TS := $(shell date '+%Y%m%d%H%M'))
+	$(eval TS := $(shell date '+%Y%m%d%H%M%s%N'))
 	touch db/migrations/${TS}_$(*F).up.sql
 	touch db/migrations/${TS}_$(*F).down.sql
 

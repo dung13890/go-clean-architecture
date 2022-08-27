@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go-app/internal/domain"
 	"go-app/pkg/logger"
+	"go-app/pkg/validate"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -39,6 +40,7 @@ func TestHandlerIndexRole(t *testing.T) {
 	defer ctrl.Finish()
 
 	e := echo.New()
+	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodGet, "/roles", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -91,6 +93,7 @@ func TestHandlerIndexRole(t *testing.T) {
 
 func TestHandlerShowRole(t *testing.T) {
 	e := echo.New()
+	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodGet, "/roles/:id", nil)
 
 	t.Parallel()
@@ -106,7 +109,8 @@ func TestHandlerShowRole(t *testing.T) {
 			args: 1,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				usecaseMock.EXPECT().Find(context.Background(), 1).Times(1).Return(&domain.Role{}, nil)
+				usecaseMock.EXPECT().Find(context.Background(), 1).Times(1).
+					Return(&domain.Role{}, nil)
 
 				if assert.NoError(t, roleHandler.Show(c)) {
 					role := &roleHttp.RoleResponse{}
@@ -138,7 +142,8 @@ func TestHandlerShowRole(t *testing.T) {
 			args: 2,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				usecaseMock.EXPECT().Find(context.Background(), 2).Times(1).Return(&domain.Role{}, errNotFound)
+				usecaseMock.EXPECT().Find(context.Background(), 2).Times(1).
+					Return(&domain.Role{}, errNotFound)
 
 				if assert.Error(t, errNotFound, roleHandler.Show(c)) {
 					role := &roleHttp.RoleResponse{}
@@ -170,6 +175,7 @@ func TestHandlerShowRole(t *testing.T) {
 
 func TestHandlerStoreRole(t *testing.T) {
 	e := echo.New()
+	e.Validator = validate.NewValidate()
 
 	t.Parallel()
 	ctrl := gomock.NewController(t)
@@ -182,12 +188,13 @@ func TestHandlerStoreRole(t *testing.T) {
 	tests := []testCase{
 		{
 			name:     "OK",
-			argStore: `{}`,
+			argStore: `{"name":"admin", "slug":"admin"}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				roleMock := domain.Role{}
-				_ = json.Unmarshal([]byte(`{}`), &roleMock)
-				usecaseMock.EXPECT().Store(context.Background(), &roleMock).Times(1).Return(nil).AnyTimes()
+				_ = json.Unmarshal([]byte(`{"name":"admin", "slug":"admin"}`), &roleMock)
+				usecaseMock.EXPECT().Store(context.Background(), &roleMock).
+					Times(1).Return(nil).AnyTimes()
 
 				if assert.NoError(t, roleHandler.Store(c)) {
 					statusResponse := &roleHttp.StatusResponse{}
@@ -210,14 +217,29 @@ func TestHandlerStoreRole(t *testing.T) {
 		},
 		{
 			name:     "BAD REQUEST",
-			argStore: `{"Name": "test"}`,
+			argStore: `{}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				roleMock := domain.Role{}
 				_ = json.Unmarshal([]byte(`{}`), &roleMock)
-				roleMock.Name = "test"
 
-				usecaseMock.EXPECT().Store(c.Request().Context(), &roleMock).Return(errNotFound).Times(1)
+				usecaseMock.EXPECT().Store(c.Request().Context(), &roleMock).Return(errNotFound).
+					Times(1).AnyTimes()
+				if assert.NoError(t, roleHandler.Store(c)) {
+					assert.Equal(t, http.StatusBadRequest, rec.Code)
+				}
+			},
+		},
+		{
+			name:     "BAD REQUEST",
+			argStore: `{"name": "test2", "slug": "test2"}`,
+			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
+				t.Helper()
+				roleMock := domain.Role{}
+				_ = json.Unmarshal([]byte(`{"name": "test2", "slug": "test2"}`), &roleMock)
+
+				usecaseMock.EXPECT().Store(c.Request().Context(), &roleMock).Return(errNotFound).
+					Times(1).AnyTimes()
 				if assert.NoError(t, roleHandler.Store(c)) {
 					assert.Equal(t, http.StatusBadRequest, rec.Code)
 				}
@@ -240,6 +262,7 @@ func TestHandlerStoreRole(t *testing.T) {
 func TestHandlerUpdateRole(t *testing.T) {
 	e := echo.New()
 
+	e.Validator = validate.NewValidate()
 	out, err := json.Marshal(domain.Role{})
 	if err != nil {
 		logger.Error().Printf("error when json marshal: %v", err)
@@ -282,6 +305,7 @@ func TestHandlerUpdateRole(t *testing.T) {
 func TestHandlerDeleteRole(t *testing.T) {
 	e := echo.New()
 
+	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodDelete, "/roles/:id", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -315,6 +339,8 @@ func TestHandlerDeleteRole(t *testing.T) {
 func TestNewRoleHandler(t *testing.T) {
 	t.Parallel()
 	e := echo.New()
+
+	e.Validator = validate.NewValidate()
 	g := e.Group("/v1")
 
 	ctrl := gomock.NewController(t)

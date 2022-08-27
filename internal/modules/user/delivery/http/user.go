@@ -31,19 +31,7 @@ func (hl *UserHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	users, _ := hl.Usecase.Fetch(ctx)
 
-	usersDto := []UserResponse{}
-	for _, user := range users {
-		usersDto = append(usersDto, UserResponse{
-			ID:        user.ID,
-			Name:      user.Name,
-			Email:     user.Email,
-			RoleID:    user.RoleID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		})
-	}
-
-	return c.JSON(http.StatusOK, usersDto)
+	return c.JSON(http.StatusOK, ConvertUsersToResponse(users))
 }
 
 // Show will Find data
@@ -58,22 +46,23 @@ func (hl *UserHandler) Show(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		RoleID:    user.RoleID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	})
+	return c.JSON(http.StatusOK, ConvertUserToResponse(user))
 }
 
 // Store will create data
 func (hl *UserHandler) Store(c echo.Context) error {
-	user := &domain.User{}
-	if err := c.Bind(user); err != nil {
+	userReq := new(UserRequest)
+	if err := c.Bind(userReq); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
+
+	err := c.Validate(userReq)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+	}
+
+	user := ConvertRequestToEntity(userReq)
+
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, user); err != nil {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
