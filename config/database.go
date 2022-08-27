@@ -15,6 +15,7 @@ type Database struct {
 	User       string `mapstructure:"DB_USER"`
 	Password   string `mapstructure:"DB_PASSWORD"`
 	SSLMode    string `mapstructure:"DB_SSLMODE" default:"disable"`
+	Debug      bool   `mapstructure:"DB_DEBUG" default:"false"`
 }
 
 // GetDBConfig Unmarshal Database Config from env
