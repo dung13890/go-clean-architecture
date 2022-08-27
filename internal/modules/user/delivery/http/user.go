@@ -58,7 +58,7 @@ func (hl *UserHandler) Store(c echo.Context) error {
 
 	err := c.Validate(userReq)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
 	user := ConvertRequestToEntity(userReq)

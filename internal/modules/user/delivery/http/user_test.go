@@ -43,7 +43,6 @@ func TestHandlerIndexUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	e := echo.New()
-	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodGet, "/users", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -97,7 +96,6 @@ func TestHandlerIndexUser(t *testing.T) {
 func TestHandlerShowUser(t *testing.T) {
 	e := echo.New()
 
-	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodGet, "/users/:id", nil)
 
 	t.Parallel()
@@ -222,7 +220,7 @@ func TestHandlerStoreUser(t *testing.T) {
 			},
 		},
 		{
-			name:     "BAD REQUEST",
+			name:     "Validate",
 			argStore: `{}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
@@ -232,7 +230,7 @@ func TestHandlerStoreUser(t *testing.T) {
 				usecaseMock.EXPECT().Store(c.Request().Context(), &userMock).Return(errNotFound).
 					Times(1).AnyTimes()
 				if assert.NoError(t, userHandler.Store(c)) {
-					assert.Equal(t, http.StatusBadRequest, rec.Code)
+					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 				}
 			},
 		},
@@ -269,7 +267,6 @@ func TestHandlerStoreUser(t *testing.T) {
 func TestHandlerUpdateUser(t *testing.T) {
 	e := echo.New()
 
-	e.Validator = validate.NewValidate()
 	out, err := json.Marshal(domain.User{})
 	if err != nil {
 		logger.Error().Printf("error when json marshal: %v", err)
@@ -312,7 +309,6 @@ func TestHandlerUpdateUser(t *testing.T) {
 func TestHandlerDeleteUser(t *testing.T) {
 	e := echo.New()
 
-	e.Validator = validate.NewValidate()
 	req := httptest.NewRequest(http.MethodDelete, "/users/:id", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -347,7 +343,6 @@ func TestNewUserHandler(t *testing.T) {
 	t.Parallel()
 	e := echo.New()
 
-	e.Validator = validate.NewValidate()
 	g := e.Group("/v1")
 
 	ctrl := gomock.NewController(t)

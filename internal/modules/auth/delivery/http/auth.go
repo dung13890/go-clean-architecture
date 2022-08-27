@@ -30,7 +30,7 @@ func (hl *AuthHandler) Login(c echo.Context) error {
 	}
 
 	if err := c.Validate(userReq); err != nil {
-		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
 	ctx := c.Request().Context()
@@ -50,7 +50,7 @@ func (hl *AuthHandler) Register(c echo.Context) error {
 	}
 
 	if err := c.Validate(userReq); err != nil {
-		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
 	ctx := c.Request().Context()
