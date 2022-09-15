@@ -14,8 +14,6 @@ test: ### run test
 # put the files with interfaces you'd like to mock in prerequisites
 # wildcards are allowed
 
-build-mock:
+go-gen:
 	@echo "Generating mocks..."
-	mockgen -source=internal/domain/user.go -destination=internal/domain/mock/user_mock.go
-	mockgen -source=internal/domain/role.go -destination=internal/domain/mock/role_mock.go
-	mockgen -source=internal/domain/auth.go -destination=internal/domain/mock/auth_mock.go
+	go generate -x ./internal/...

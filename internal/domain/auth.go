@@ -1,3 +1,5 @@
+//go:generate mockgen -source=$GOFILE -destination=mock/auth_mock.go
+
 package domain
 
 import (

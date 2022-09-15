@@ -53,8 +53,8 @@ air -c cmd/app/.air.toml
 # Check lint
 make lint
 
-# Make mock file
-make build-mock
+# Go generate mock, something
+make go-gen
 
 # Check Unit test
 make test

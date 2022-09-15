@@ -13,7 +13,7 @@ import (
 	userRepository "go-app/internal/modules/user/repository"
 )
 
-var pathJSON = "cmd/seed/data.json"
+var pathJSON = "db/seeds/data.json"
 
 type seedData struct {
 	Roles []domain.Role `json:"roles"`
