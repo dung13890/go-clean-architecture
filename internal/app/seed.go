@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	roleRepository "go-app/internal/modules/role/repository"
+	todoRepository "go-app/internal/modules/todo/repository"
 	userRepository "go-app/internal/modules/user/repository"
 )
 
@@ -18,6 +19,7 @@ var pathJSON = "db/seeds/data.json"
 type seedData struct {
 	Roles []domain.Role `json:"roles"`
 	Users []domain.User `json:"users"`
+	Todos []domain.Todo `json:"todos"`
 }
 
 // Seed is function that seed data
@@ -29,6 +31,7 @@ func Seed(dbConfig config.Database) error {
 
 	userRepo := userRepository.NewRepository(db)
 	roleRepo := roleRepository.NewRepository(db)
+	todoRepo := todoRepository.NewRepository(db)
 
 	viper.SetConfigFile(pathJSON)
 	err = viper.ReadInConfig()
@@ -51,6 +54,13 @@ func Seed(dbConfig config.Database) error {
 
 	for _, u := range data.Users {
 		err = userRepo.Store(context.Background(), &u)
+		if err != nil {
+			return errors.Wrap(err)
+		}
+	}
+
+	for _, todo := range data.Todos {
+		err = todoRepo.Store(context.Background(), &todo)
 		if err != nil {
 			return errors.Wrap(err)
 		}

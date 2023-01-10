@@ -9,6 +9,11 @@
             "id": 2,
             "name": "User",
             "slug": "user"
+        },
+        {
+            "id": 3,
+            "name": "User1",
+            "slug": "user1"
         }
     ],
     "users": [
@@ -17,6 +22,12 @@
             "email": "admin@example.com",
             "roleId": 1,
             "password": "Aa@123456"
+        }
+    ],
+    "todos": [
+        {
+            "title": "Learn GO",
+            "status": 0
         }
     ]
 }

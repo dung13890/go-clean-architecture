@@ -4,6 +4,7 @@ import (
 	"go-app/internal/domain"
 	authUC "go-app/internal/modules/auth/usecase"
 	roleUC "go-app/internal/modules/role/usecase"
+	todoUC "go-app/internal/modules/todo/usecase"
 	userUC "go-app/internal/modules/user/usecase"
 )
 
@@ -12,6 +13,7 @@ type Usecase struct {
 	RoleUsecase domain.RoleUsecase
 	UserUsecase domain.UserUsecase
 	AuthUsecase domain.AuthUsecase
+	TodoUsecase domain.TodoUsecase
 }
 
 // NewUsecase implements from interface
@@ -20,5 +22,6 @@ func NewUsecase(repo *Repository) *Usecase {
 		RoleUsecase: roleUC.NewUsecase(repo.RoleRepository),
 		UserUsecase: userUC.NewUsecase(repo.UserRepository),
 		AuthUsecase: authUC.NewUsecase(repo.UserRepository),
+		TodoUsecase: todoUC.NewUsecase(repo.TodoRepository),
 	}
 }
