@@ -18,4 +18,7 @@ const (
 const (
 	// TokenLifetime 7days
 	TokenLifetime = time.Hour * 7 * 24
+
+	// GuardJWT use for context
+	GuardJWT = "jwt_object_user"
 )

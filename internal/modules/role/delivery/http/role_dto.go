@@ -5,13 +5,9 @@ import (
 	"time"
 )
 
-// RolesResponse is array of role response
-type RolesResponse []RoleResponse
-
 // RoleRequest is request for create
 type RoleRequest struct {
 	Name string `json:"name" validate:"required"`
-	Slug string `json:"slug" validate:"required"`
 }
 
 // RoleResponse is struct used for role
@@ -33,8 +29,8 @@ type StatusResponse struct {
 	Status bool `json:"status"`
 }
 
-// ConvertRoleToResponse DTO
-func ConvertRoleToResponse(role *domain.Role) RoleResponse {
+// convertEntityToResponse DTO
+func convertEntityToResponse(role *domain.Role) RoleResponse {
 	return RoleResponse{
 		ID:        role.ID,
 		Name:      role.Name,
@@ -44,29 +40,9 @@ func ConvertRoleToResponse(role *domain.Role) RoleResponse {
 	}
 }
 
-// ConvertRolesToResponse DTO
-func ConvertRolesToResponse(roles []domain.Role) RolesResponse {
-	rolesRes := make(RolesResponse, 0)
-
-	for _, r := range roles {
-		roleRes := RoleResponse{
-			ID:        r.ID,
-			Name:      r.Name,
-			Slug:      r.Slug,
-			CreatedAt: r.CreatedAt,
-			UpdatedAt: r.UpdatedAt,
-		}
-
-		rolesRes = append(rolesRes, roleRes)
-	}
-
-	return rolesRes
-}
-
-// ConvertRequestToEntity DTO
-func ConvertRequestToEntity(role *RoleRequest) *domain.Role {
+// convertRequestToEntity DTO
+func convertRequestToEntity(role *RoleRequest) *domain.Role {
 	return &domain.Role{
 		Name: role.Name,
-		Slug: role.Slug,
 	}
 }

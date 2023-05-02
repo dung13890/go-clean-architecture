@@ -4,7 +4,6 @@ import (
 	"context"
 	"go-app/internal/domain"
 	"go-app/pkg/errors"
-	"go-app/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -20,55 +19,49 @@ func NewRepository(db *gorm.DB) domain.UserRepository {
 }
 
 // Fetch will fetch content from db
-func (rp *UserRepository) Fetch(c context.Context) ([]domain.User, error) {
+func (rp *UserRepository) Fetch(ctx context.Context) ([]domain.User, error) {
+	dao := []User{}
+
+	if err := rp.DB.WithContext(ctx).Find(&dao).Error; err != nil {
+		return nil, errors.Wrap(err)
+	}
 	users := []domain.User{}
-	if err := rp.DB.Find(&users).Error; err != nil {
-		return users, errors.Wrap(err)
+
+	for i := range dao {
+		u := convertToEntity(&dao[i])
+		users = append(users, *u)
 	}
 
 	return users, nil
 }
 
 // Find will find content from db
-func (rp *UserRepository) Find(c context.Context, id int) (*domain.User, error) {
-	user := domain.User{}
-	if err := rp.DB.Where("id = ?", id).First(&user).Error; err != nil {
+func (rp *UserRepository) Find(ctx context.Context, id int) (*domain.User, error) {
+	dao := User{}
+	if err := rp.DB.WithContext(ctx).First(&dao, id).Error; err != nil {
 		return nil, errors.Wrap(err)
 	}
 
-	return &user, nil
+	return convertToEntity(&dao), nil
 }
 
 // Store will create data to db
-func (rp *UserRepository) Store(c context.Context, user *domain.User) error {
-	passHash, err := utils.GeneratePassword(user.Password)
-	if err != nil {
+func (rp *UserRepository) Store(ctx context.Context, user *domain.User) error {
+	dao := convertToDao(user)
+	if err := rp.DB.WithContext(ctx).Create(&dao).Error; err != nil {
 		return errors.Wrap(err)
 	}
-	user.Password = passHash
-	if err := rp.DB.Create(user).Error; err != nil {
-		return errors.Wrap(err)
-	}
+	*user = *convertToEntity(dao)
 
 	return nil
 }
 
-// Search is a function that returns a list of users filtered by query
-func (rp *UserRepository) Search(ctx context.Context, q domain.UserQueryParam) ([]domain.User, error) {
-	var users []domain.User
-	if err := rp.DB.Where("email = ? ", q.Email).Find(&users).Error; err != nil {
-		return users, errors.Wrap(err)
-	}
-
-	return users, nil
-}
-
 // FindByQuery is a function that returns a users filtered by query
-func (rp *UserRepository) FindByQuery(ctx context.Context, q domain.UserQueryParam) (*domain.User, error) {
-	user := &domain.User{}
-	if err := rp.DB.Where("email = ? ", q.Email).First(&user).Error; err != nil {
+func (rp *UserRepository) FindByQuery(ctx context.Context, q domain.User) (*domain.User, error) {
+	dao := convertToDao(&q)
+	if err := rp.DB.WithContext(ctx).First(&dao, &dao).Error; err != nil {
 		return nil, errors.Wrap(err)
 	}
 
-	return user, nil
+	return convertToEntity(dao), nil
 }

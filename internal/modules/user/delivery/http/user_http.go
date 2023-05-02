@@ -31,7 +31,13 @@ func (hl *UserHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	users, _ := hl.Usecase.Fetch(ctx)
 
-	return c.JSON(http.StatusOK, ConvertUsersToResponse(users))
+	usersRes := make([]UserResponse, 0)
+	for i := range users {
+		user := convertEntityToResponse(&users[i])
+		usersRes = append(usersRes, user)
+	}
+
+	return c.JSON(http.StatusOK, usersRes)
 }
 
 // Show will Find data
@@ -46,7 +52,7 @@ func (hl *UserHandler) Show(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, ConvertUserToResponse(user))
+	return c.JSON(http.StatusOK, convertEntityToResponse(user))
 }
 
 // Store will create data
@@ -61,7 +67,7 @@ func (hl *UserHandler) Store(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
-	user := ConvertRequestToEntity(userReq)
+	user := convertRequestToEntity(userReq)
 
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, user); err != nil {

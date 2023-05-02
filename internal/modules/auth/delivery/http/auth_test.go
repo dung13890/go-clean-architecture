@@ -10,7 +10,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -42,12 +44,13 @@ func TestNewAuthHandler(t *testing.T) {
 	t.Parallel()
 	e := echo.New()
 	g := e.Group("/v1")
+	ga := e.Group("")
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	usecaseMock := mockDomain.NewMockAuthUsecase(ctrl)
-	authHttp.NewHandler(g, usecaseMock)
+	authHttp.NewHandler(g, ga, usecaseMock)
 }
 
 func TestHandlerRegisterUser(t *testing.T) {
@@ -88,11 +91,11 @@ func TestHandlerRegisterUser(t *testing.T) {
 					Return(&domain.User{}, nil).AnyTimes()
 
 				if assert.NoError(t, authHandler.Register(c)) {
-					userResponse := &authHttp.UserRegisterResponse{}
+					userResponse := &authHttp.UserResponse{}
 					_ = json.Unmarshal(rec.Body.Bytes(), userResponse)
 
 					assert.Equal(t, http.StatusCreated, rec.Code)
-					assert.Equal(t, &authHttp.UserRegisterResponse{}, userResponse)
+					assert.Equal(t, &authHttp.UserResponse{}, userResponse)
 				}
 			},
 		},
@@ -181,12 +184,18 @@ func TestHandlerLoginUser(t *testing.T) {
 			name:     "OK",
 			argStore: `{"email": "user1@example", "password": "Abc1233"}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
+				now := time.Now()
 				t.Helper()
 				userMock := &domain.User{}
 				_ = json.Unmarshal([]byte(`{"email": "user1@example", "password": "Abc1233"}`),
 					userMock)
 				usecaseMock.EXPECT().Login(context.Background(), userMock).Times(1).
-					Return(&domain.Claims{}, "string_token", nil).AnyTimes()
+					Return(&domain.Claims{
+						RegisteredClaims: jwt.RegisteredClaims{
+							IssuedAt:  jwt.NewNumericDate(now),
+							ExpiresAt: jwt.NewNumericDate(now),
+						},
+					}, "string_token", nil).AnyTimes()
 
 				if assert.NoError(t, authHandler.Login(c)) {
 					userResponse := &authHttp.UserLoginResponse{}
@@ -196,6 +205,7 @@ func TestHandlerLoginUser(t *testing.T) {
 					assert.Equal(t, &authHttp.UserLoginResponse{
 						Auth: authHttp.AuthResponse{
 							AccessToken: "string_token",
+							ExpiresAt:   now.Unix(),
 						},
 					}, userResponse)
 				}

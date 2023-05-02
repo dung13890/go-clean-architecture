@@ -30,8 +30,13 @@ func NewHandler(g *echo.Group, uc domain.RoleUsecase) {
 func (hl *RoleHandler) Index(c echo.Context) error {
 	ctx := c.Request().Context()
 	roles, _ := hl.Usecase.Fetch(ctx)
+	rolesRes := make([]RoleResponse, 0)
+	for i := range roles {
+		role := convertEntityToResponse(&roles[i])
+		rolesRes = append(rolesRes, role)
+	}
 
-	return c.JSON(http.StatusOK, ConvertRolesToResponse(roles))
+	return c.JSON(http.StatusOK, rolesRes)
 }
 
 // Show will Find data
@@ -46,7 +51,7 @@ func (hl *RoleHandler) Show(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, ConvertRoleToResponse(role))
+	return c.JSON(http.StatusOK, convertEntityToResponse(role))
 }
 
 // Store will create data
@@ -61,7 +66,7 @@ func (hl *RoleHandler) Store(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
 	}
 
-	role := ConvertRequestToEntity(roleReq)
+	role := convertRequestToEntity(roleReq)
 
 	ctx := c.Request().Context()
 	if err := hl.Usecase.Store(ctx, role); err != nil {

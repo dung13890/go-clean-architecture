@@ -5,7 +5,7 @@ package domain
 import (
 	"context"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // Claims is struct claims for jwt
@@ -14,7 +14,7 @@ type Claims struct {
 	Name   string `json:"name"`
 	Email  string `json:"email"`
 	RoleID int    `json:"role_id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 // AuthUsecase represent the user's repository contract

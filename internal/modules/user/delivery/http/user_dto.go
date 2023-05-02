@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-// UsersResponse is array of user response
-type UsersResponse []UserResponse
-
 // UserRequest is struct used for create user
 type UserRequest struct {
 	Name     string `json:"name" validate:"required"`
@@ -36,8 +33,8 @@ type StatusResponse struct {
 	Status bool `json:"status"`
 }
 
-// ConvertUserToResponse DTO
-func ConvertUserToResponse(user *domain.User) UserResponse {
+// convertEntityToResponse DTO
+func convertEntityToResponse(user *domain.User) UserResponse {
 	return UserResponse{
 		ID:        user.ID,
 		Name:      user.Name,
@@ -48,28 +45,8 @@ func ConvertUserToResponse(user *domain.User) UserResponse {
 	}
 }
 
-// ConvertUsersToResponse DTO
-func ConvertUsersToResponse(users []domain.User) UsersResponse {
-	usersRes := make(UsersResponse, 0)
-
-	for _, u := range users {
-		userRes := UserResponse{
-			ID:        u.ID,
-			Name:      u.Name,
-			Email:     u.Email,
-			RoleID:    u.RoleID,
-			CreatedAt: u.CreatedAt,
-			UpdatedAt: u.UpdatedAt,
-		}
-
-		usersRes = append(usersRes, userRes)
-	}
-
-	return usersRes
-}
-
-// ConvertRequestToEntity DTO
-func ConvertRequestToEntity(u *UserRequest) *domain.User {
+// convertRequestToEntity DTO
+func convertRequestToEntity(u *UserRequest) *domain.User {
 	return &domain.User{
 		Name:     u.Name,
 		Email:    u.Email,

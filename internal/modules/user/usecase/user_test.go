@@ -140,55 +140,6 @@ func TestStoreUser(t *testing.T) {
 	}
 }
 
-func TestSearchUser(t *testing.T) {
-	t.Parallel()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	repo := mockDomain.NewMockUserRepository(ctrl)
-	uc := usecase.NewUsecase(repo)
-
-	tests := []test{
-		{
-			name: "OK",
-			mock: func(repo *mockDomain.MockUserRepository) {
-				repo.
-					EXPECT().
-					Search(context.Background(), domain.UserQueryParam{Email: "email"}).
-					Return([]domain.User{}, nil)
-			},
-			res:  []domain.User{},
-			args: domain.UserQueryParam{Email: "email"},
-			err:  nil,
-		},
-		{
-			name: "Not Good",
-			mock: func(repo *mockDomain.MockUserRepository) {
-				repo.
-					EXPECT().
-					Search(context.Background(), domain.UserQueryParam{Email: "email2"}).
-					Return(nil, errUc)
-			},
-			res:  []domain.User(nil),
-			args: domain.UserQueryParam{Email: "email2"},
-			err:  errUc,
-		},
-	}
-
-	for _, tc := range tests {
-		tc := tc
-
-		t.Run(tc.name, func(t *testing.T) {
-			tc.mock(repo)
-
-			res, err := uc.Search(context.Background(), tc.args.(domain.UserQueryParam))
-
-			require.Equal(t, res, tc.res)
-			require.ErrorIs(t, err, tc.err)
-		})
-	}
-}
-
 func TestFindByQueryUser(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
@@ -203,11 +154,11 @@ func TestFindByQueryUser(t *testing.T) {
 			mock: func(repo *mockDomain.MockUserRepository) {
 				repo.
 					EXPECT().
-					FindByQuery(context.Background(), domain.UserQueryParam{Email: "email"}).
+					FindByQuery(context.Background(), domain.User{Email: "email"}).
 					Return(&domain.User{}, nil)
 			},
 			res:  &domain.User{},
-			args: domain.UserQueryParam{Email: "email"},
+			args: domain.User{Email: "email"},
 			err:  nil,
 		},
 		{
@@ -215,11 +166,11 @@ func TestFindByQueryUser(t *testing.T) {
 			mock: func(repo *mockDomain.MockUserRepository) {
 				repo.
 					EXPECT().
-					FindByQuery(context.Background(), domain.UserQueryParam{Email: "email2"}).
+					FindByQuery(context.Background(), domain.User{Email: "email2"}).
 					Return(nil, errUc)
 			},
 			res:  (*domain.User)(nil),
-			args: domain.UserQueryParam{Email: "email2"},
+			args: domain.User{Email: "email2"},
 			err:  errUc,
 		},
 	}
@@ -230,7 +181,7 @@ func TestFindByQueryUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock(repo)
 
-			res, err := uc.FindByQuery(context.Background(), tc.args.(domain.UserQueryParam))
+			res, err := uc.FindByQuery(context.Background(), tc.args.(domain.User))
 
 			require.Equal(t, res, tc.res)
 			require.ErrorIs(t, err, tc.err)

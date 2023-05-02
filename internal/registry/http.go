@@ -2,7 +2,6 @@ package registry
 
 import (
 	"go-app/config"
-	"go-app/internal/domain"
 	authHttp "go-app/internal/modules/auth/delivery/http"
 	roleHttp "go-app/internal/modules/role/delivery/http"
 	userHttp "go-app/internal/modules/user/delivery/http"
@@ -21,26 +20,20 @@ func NewHTTPHandler(e *echo.Echo, uc *Usecase) {
 	e.Validator = validate.NewValidate()
 	g := e.Group("/api")
 
-	authGroup := g.Group("")
-	authHttp.NewHandler(authGroup, uc.AuthUsecase)
-
-	DefaultJWTConfig := middleware.JWTConfig{
-		TokenLookup: "header:" + echo.HeaderAuthorization,
-		AuthScheme:  "Bearer",
-		Claims:      &domain.Claims{},
-		SigningKey:  []byte(config.GetAppConfig().AppJWTKey),
-	}
-	g.Use(middleware.JWTWithConfig(DefaultJWTConfig))
-
 	// CORS restricted with a custom function to allow origins
 	// and with the GET, PUT, POST or DELETE methods allowed.
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	g.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOriginFunc: corsAllowOrigin,
 		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 
-	roleHttp.NewHandler(g, uc.RoleUsecase)
-	userHttp.NewHandler(g, uc.UserUsecase)
+	authGroup := g.Group("")
+	authGroup.Use(authHttp.Authenticate())
+	authGroup.Use(authHttp.SetUserFromClaims())
+
+	authHttp.NewHandler(g, authGroup, uc.AuthUsecase)
+	roleHttp.NewHandler(authGroup, uc.RoleUsecase)
+	userHttp.NewHandler(authGroup, uc.UserUsecase)
 }
 
 func corsAllowOrigin(origin string) (bool, error) {

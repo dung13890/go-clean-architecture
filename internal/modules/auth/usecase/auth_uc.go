@@ -10,7 +10,7 @@ import (
 	"go-app/pkg/utils"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // AuthUsecase ...
@@ -38,7 +38,8 @@ func (uc AuthUsecase) Register(ctx context.Context, user *domain.User) (*domain.
 
 // Login is function uses to log in
 func (uc AuthUsecase) Login(ctx context.Context, u *domain.User) (*domain.Claims, string, error) {
-	user, err := uc.repo.FindByQuery(ctx, domain.UserQueryParam{Email: u.Email})
+	userByEmail := domain.User{Email: u.Email}
+	user, err := uc.repo.FindByQuery(ctx, userByEmail)
 	if err != nil {
 		return nil, "", pkgErrors.Wrap(err)
 	}
@@ -48,7 +49,8 @@ func (uc AuthUsecase) Login(ctx context.Context, u *domain.User) (*domain.Claims
 	}
 
 	// Create token and store to claims
-	expirationTime := time.Now().Add(constants.TokenLifetime)
+	now := time.Now()
+	expirationTime := now.Add(constants.TokenLifetime)
 
 	// JwtKey is secret key fow singed
 	jwtKey := []byte(config.GetAppConfig().AppJWTKey)
@@ -58,8 +60,9 @@ func (uc AuthUsecase) Login(ctx context.Context, u *domain.User) (*domain.Claims
 		Name:   user.Name,
 		Email:  user.Email,
 		RoleID: user.RoleID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
 	}
 

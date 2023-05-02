@@ -42,15 +42,15 @@ func Seed(dbConfig config.Database) error {
 		return errors.Wrap(err)
 	}
 
-	for _, r := range data.Roles {
-		err = roleRepo.Store(context.Background(), &r)
+	for i := range data.Roles {
+		err = roleRepo.Store(context.Background(), &data.Roles[i])
 		if err != nil {
 			return errors.Wrap(err)
 		}
 	}
 
-	for _, u := range data.Users {
-		err = userRepo.Store(context.Background(), &u)
+	for j := range data.Users {
+		err = userRepo.Store(context.Background(), &data.Users[j])
 		if err != nil {
 			return errors.Wrap(err)
 		}
