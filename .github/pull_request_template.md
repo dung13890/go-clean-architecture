@@ -1,24 +1,24 @@
-### Working Issue (*)
+### Working Issue
 Before: #ID
 After: Closed #ID
 
-### What i did (*)
+### What i did
 - [ ] example 1
 - [ ] example 2
 
 
-### [Checklist](https://github.com/the-cev7/checklist-code-review#heavy_check_mark-1-pull-request-has-been-self-reviewed) (*)
+### [Checklist]
 - [ ] Pull request has been self-reviewed
 - [ ] Check impacted areas
 
-### [UnitTest](https://github.com/the-cev7/checklist-code-review#heavy_check_mark-6-self-describing-test-method) (*)
+### [UnitTest]
 - [ ] Self-describing test method
 - [ ] My tests are fast!
 
-### [Security](https://github.com/the-cev7/checklist-code-review#heavy_check_mark-12-validate-all-data-sent-from-the-client) (*)
+### [Security]
 - [ ] Validate all data sent from the client
 - [ ] Output has no information about SQL query
 
-### [Performance](https://github.com/the-cev7/checklist-code-review#heavy_check_mark-16-resolved-n--1-query)  (Optional)
+### [Performance]
 - [ ] Resolved n + 1 query
 - [ ] Time open page < 1000 ms

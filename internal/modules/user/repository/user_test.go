@@ -47,7 +47,7 @@ func setUp(t *testing.T) (*sql.DB, *gorm.DB, sqlmock.Sqlmock) {
 	return db, dbConnectMock, mock
 }
 
-func TestFetchUser(t *testing.T) {
+func TestFetchUserToParallel(t *testing.T) {
 	t.Parallel()
 	db, dbConnectMock, mock := setUp(t)
 	defer db.Close()
@@ -59,7 +59,7 @@ func TestFetchUser(t *testing.T) {
 			name: "OK",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "users"`,
+					`SELECT * FROM "users" WHERE "users"."deleted_at" IS NULL`,
 				)
 				mock.ExpectQuery(query).WithArgs().WillReturnRows(sqlmock.NewRows(nil))
 			},
@@ -70,11 +70,11 @@ func TestFetchUser(t *testing.T) {
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "users"`,
+					`SELECT * FROM "users" WHERE "users"."deleted_at" IS NULL`,
 				)
 				mock.ExpectQuery(query).WithArgs().WillReturnError(errRp)
 			},
-			res: []domain.User{},
+			res: ([]domain.User)(nil),
 			err: errRp,
 		},
 	}
@@ -91,7 +91,7 @@ func TestFetchUser(t *testing.T) {
 	}
 }
 
-func TestFindUser(t *testing.T) {
+func TestFindUserToParallel(t *testing.T) {
 	t.Parallel()
 	db, dbConnectMock, mock := setUp(t)
 	timeNow := time.Now()
@@ -106,7 +106,7 @@ func TestFindUser(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "email", "role_id", "created_at", "updated_at", "deleted_at"}).
 					AddRow(1, "name", "email", 1, timeNow, timeNow, nil)
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "users" WHERE id = $1 ORDER BY "users"."id" LIMIT 1`,
+					`SELECT * FROM "users" WHERE "users"."id" = $1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1`,
 				)
 				mock.ExpectQuery(query).WithArgs(1).WillReturnRows(rows)
 			},
@@ -127,7 +127,7 @@ func TestFindUser(t *testing.T) {
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "users" WHERE id = $1 ORDER BY "users"."id" LIMIT 1`,
+					`SELECT * FROM "users" WHERE "users"."id" = $1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1`,
 				)
 				mock.ExpectQuery(query).WithArgs(2).WillReturnError(errRp)
 			},
@@ -151,7 +151,7 @@ func TestFindUser(t *testing.T) {
 	}
 }
 
-func TestStoreUser(t *testing.T) {
+func TestStoreUserToParallel(t *testing.T) {
 	t.Parallel()
 	db, dbConnectMock, mock := setUp(t)
 	timeNow := time.Now()
@@ -164,13 +164,15 @@ func TestStoreUser(t *testing.T) {
 			name: "OK",
 			mock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+				mock.ExpectBegin()
 				query := regexp.QuoteMeta(
-					`INSERT INTO "users" ("name","email","role_id","password","created_at","updated_at","deleted_at")
+					`INSERT INTO "users" ("created_at","updated_at","deleted_at","name","email","role_id","password")
 								VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "id"`,
 				)
 				mock.ExpectQuery(query).
-					WithArgs("name", "email", 1, sqlmock.AnyArg(), timeNow, timeNow, nil).
+					WithArgs(timeNow, timeNow, nil, "name", "email", 1, sqlmock.AnyArg()).
 					WillReturnRows(rows)
+				mock.ExpectCommit()
 			},
 			args: &domain.User{
 				Name:      "name",
@@ -185,13 +187,15 @@ func TestStoreUser(t *testing.T) {
 		{
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
 				query := regexp.QuoteMeta(
-					`INSERT INTO "users" ("name","email","role_id","password","created_at","updated_at","deleted_at")
+					`INSERT INTO "users" ("created_at","updated_at","deleted_at","name","email","role_id","password")
 								VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "id"`,
 				)
 				mock.ExpectQuery(query).
-					WithArgs("name2", "email2", 2, sqlmock.AnyArg(), timeNow, timeNow, nil).
+					WithArgs(timeNow, timeNow, nil, "name2", "email2", 2, sqlmock.AnyArg()).
 					WillReturnError(errRp)
+				mock.ExpectRollback()
 			},
 			args: &domain.User{
 				Name:      "name2",
@@ -217,7 +221,7 @@ func TestStoreUser(t *testing.T) {
 	}
 }
 
-func TestSearchUser(t *testing.T) {
+func TestFindByQueryToParallel(t *testing.T) {
 	t.Parallel()
 	db, dbConnectMock, mock := setUp(t)
 	timeNow := time.Now()
@@ -241,83 +245,11 @@ func TestSearchUser(t *testing.T) {
 				}).
 					AddRow(1, "name", "email", 1, "password", timeNow, timeNow, nil)
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "users" WHERE email = $1`,
+					`SELECT * FROM "users" WHERE "users"."email" = $1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1`,
 				)
 				mock.ExpectQuery(query).WithArgs("email").WillReturnRows(rows)
 			},
-			args: domain.UserQueryParam{
-				Email: "email",
-			},
-			res: []domain.User{
-				{
-					ID:        1,
-					Name:      "name",
-					Email:     "email",
-					RoleID:    1,
-					Password:  "password",
-					CreatedAt: timeNow,
-					UpdatedAt: timeNow,
-				},
-			},
-			err: nil,
-		},
-		{
-			name: "NG",
-			mock: func(mock sqlmock.Sqlmock) {
-				query := regexp.QuoteMeta(
-					`SELECT * FROM "users" WHERE email = $1`,
-				)
-				mock.ExpectQuery(query).WithArgs("email2").WillReturnError(errRp)
-			},
-			args: domain.UserQueryParam{
-				Email: "email2",
-			},
-			res: []domain.User(nil),
-			err: errRp,
-		},
-	}
-
-	for _, tc := range tcs {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			tc.mock(mock)
-			res, err := repoMock.Search(context.Background(), tc.args.(domain.UserQueryParam))
-
-			assert.ErrorIs(t, err, tc.err)
-			assert.Equal(t, res, tc.res)
-		})
-	}
-}
-
-func TestFindByQuery(t *testing.T) {
-	t.Parallel()
-	db, dbConnectMock, mock := setUp(t)
-	timeNow := time.Now()
-	defer db.Close()
-
-	repoMock := repository.NewRepository(dbConnectMock)
-
-	tcs := []testcase{
-		{
-			name: "OK",
-			mock: func(mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{
-					"id",
-					"name",
-					"email",
-					"role_id",
-					"password",
-					"created_at",
-					"updated_at",
-					"deleted_at",
-				}).
-					AddRow(1, "name", "email", 1, "password", timeNow, timeNow, nil)
-				query := regexp.QuoteMeta(
-					`SELECT * FROM "users" WHERE email = $1 ORDER BY "users"."id" LIMIT 1`,
-				)
-				mock.ExpectQuery(query).WithArgs("email").WillReturnRows(rows)
-			},
-			args: domain.UserQueryParam{
+			args: domain.User{
 				Email: "email",
 			},
 			res: &domain.User{
@@ -335,11 +267,11 @@ func TestFindByQuery(t *testing.T) {
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "users" WHERE email = $1 ORDER BY "users"."id" LIMIT 1`,
+					`SELECT * FROM "users" WHERE "users"."email" = $1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT 1`,
 				)
 				mock.ExpectQuery(query).WithArgs("email2").WillReturnError(errRp)
 			},
-			args: domain.UserQueryParam{
+			args: domain.User{
 				Email: "email2",
 			},
 			res: (*domain.User)(nil),
@@ -351,7 +283,7 @@ func TestFindByQuery(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock(mock)
-			res, err := repoMock.FindByQuery(context.Background(), tc.args.(domain.UserQueryParam))
+			res, err := repoMock.FindByQuery(context.Background(), tc.args.(domain.User))
 
 			assert.ErrorIs(t, err, tc.err)
 			assert.Equal(t, res, tc.res)

@@ -8,7 +8,9 @@ import (
 	"go-app/internal/modules/auth/usecase"
 	"go-app/pkg/utils"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -75,6 +77,7 @@ func TestLoginAuth(t *testing.T) {
 
 	repo := mockDomain.NewMockUserRepository(ctrl)
 	uc := usecase.NewUsecase(repo)
+	now := time.Now()
 
 	tests := []test{
 		{
@@ -83,19 +86,24 @@ func TestLoginAuth(t *testing.T) {
 				passHash, _ := utils.GeneratePassword("")
 				repo.
 					EXPECT().
-					FindByQuery(context.Background(), domain.UserQueryParam{Email: "email@email.com"}).
+					FindByQuery(context.Background(), domain.User{Email: "email@email.com"}).
 					Return(&domain.User{Password: passHash}, nil)
 			},
 			args: &domain.User{Email: "email@email.com"},
-			res:  &domain.Claims{},
-			err:  nil,
+			res: &domain.Claims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					IssuedAt:  jwt.NewNumericDate(now),
+					ExpiresAt: jwt.NewNumericDate(now),
+				},
+			},
+			err: nil,
 		},
 		{
 			name: "FindByQuery NG",
 			mock: func(repo *mockDomain.MockUserRepository) {
 				repo.
 					EXPECT().
-					FindByQuery(context.Background(), domain.UserQueryParam{Email: "email1@email.com"}).
+					FindByQuery(context.Background(), domain.User{Email: "email1@email.com"}).
 					Return(nil, errUc)
 			},
 			args: &domain.User{Email: "email1@email.com"},
@@ -108,7 +116,7 @@ func TestLoginAuth(t *testing.T) {
 				passHash, _ := utils.GeneratePassword("wrong!")
 				repo.
 					EXPECT().
-					FindByQuery(context.Background(), domain.UserQueryParam{Email: "email2@email.com"}).
+					FindByQuery(context.Background(), domain.User{Email: "email2@email.com"}).
 					Return(&domain.User{Password: passHash}, nil)
 			},
 			args: &domain.User{Email: "email2@email.com"},
@@ -125,7 +133,8 @@ func TestLoginAuth(t *testing.T) {
 			args, _ := tc.args.(*domain.User)
 			res, _, err := uc.Login(context.Background(), args)
 			if res != nil {
-				res.StandardClaims.ExpiresAt = 0
+				res.RegisteredClaims.IssuedAt = jwt.NewNumericDate(now)
+				res.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(now)
 			}
 			assert.Equal(t, res, tc.res)
 			if tc.err != nil {

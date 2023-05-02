@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 
 	"golang.org/x/xerrors"
@@ -38,4 +39,14 @@ func Wrap(err error) error {
 		err:   err,
 		frame: xerrors.Caller(skip),
 	}
+}
+
+// Is .-
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}
+
+// New .-
+func New(text string) error {
+	return Wrap(xerrors.New(text))
 }

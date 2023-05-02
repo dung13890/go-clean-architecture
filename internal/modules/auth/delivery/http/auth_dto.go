@@ -34,8 +34,8 @@ type AuthResponse struct {
 	ExpiresAt   int64  `json:"expires_at"`
 }
 
-// UserRegisterResponse is struct used for register
-type UserRegisterResponse struct {
+// UserResponse is struct used for register
+type UserResponse struct {
 	ID        uint      `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
@@ -49,8 +49,12 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-// ConvertUserToLoginResponse DTO
-func ConvertUserToLoginResponse(claims domain.Claims, tokenStr string) UserLoginResponse {
+type StatusResponse struct {
+	Status bool `json:"status"`
+}
+
+// convertUserToLoginResponse DTO
+func convertUserToLoginResponse(claims domain.Claims, tokenStr string) UserLoginResponse {
 	return UserLoginResponse{
 		ID:     claims.ID,
 		Name:   claims.Name,
@@ -58,14 +62,14 @@ func ConvertUserToLoginResponse(claims domain.Claims, tokenStr string) UserLogin
 		RoleID: claims.RoleID,
 		Auth: AuthResponse{
 			AccessToken: tokenStr,
-			ExpiresAt:   claims.ExpiresAt,
+			ExpiresAt:   claims.ExpiresAt.Unix(),
 		},
 	}
 }
 
-// ConvertUserToRegisterResponse DTO
-func ConvertUserToRegisterResponse(user *domain.User) UserRegisterResponse {
-	return UserRegisterResponse{
+// convertUserToUserResponse DTO
+func convertUserToUserResponse(user *domain.User) UserResponse {
+	return UserResponse{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
@@ -75,16 +79,16 @@ func ConvertUserToRegisterResponse(user *domain.User) UserRegisterResponse {
 	}
 }
 
-// ConvertLoginRequestToEntity DTO
-func ConvertLoginRequestToEntity(userReq *UserLoginRequest) *domain.User {
+// convertLoginRequestToEntity DTO
+func convertLoginRequestToEntity(userReq *UserLoginRequest) *domain.User {
 	return &domain.User{
 		Email:    userReq.Email,
 		Password: userReq.Password,
 	}
 }
 
-// ConvertRegisterRequestToeEntity DTO
-func ConvertRegisterRequestToeEntity(userReq *UserRegisterRequest) *domain.User {
+// convertRegisterRequestToEntity DTO
+func convertRegisterRequestToEntity(userReq *UserRegisterRequest) *domain.User {
 	return &domain.User{
 		Name:     userReq.Name,
 		Email:    userReq.Email,

@@ -1,8 +1,9 @@
 # go-clean-architecture
-Codebase for golang use clean architecture
-
 ![workflow status](https://github.com/dung13890/go-clean-architecture/actions/workflows/go-ci.yml/badge.svg)
 
+Codebase for golang use clean architecture.
+
+*The current go version use is `v1.20`*
 
 ## Overview
 The purpose of the codebase is to show:
@@ -12,6 +13,7 @@ The purpose of the codebase is to show:
 - Independent of Database
 - Independent of any external agency
 
+
 More at [https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 ## Content
@@ -20,6 +22,11 @@ More at [https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture
 - [Tools Used](#tools-used)
 
 ## Quick start
+Below are some modules included in this project:
+- auth (JWT / API)
+- users (Create / List / Show / Update / Delete)
+- roles (Create / List / Show / Update / Delete)
+
 Build Local development:
 ```bash
 cd go-clean-architecture
@@ -43,6 +50,10 @@ make create_example_table.sql
 
 # Migrate
 go run cmd/migrate/main.go
+
+# Migrate down
+# go run cmd/migrate/main.go down {step}
+go run cmd/migrate/main.go down 2
 
 # Run seed data
 go run cmd/seed/main.go
@@ -88,12 +99,25 @@ This application is divided into 2 layers, internal and pkg:
 
 The communication between layers
 
-![Clean Architecture Layer](clean_layers.jpg)
-```
-    Delivery >  usecase (interface)
-                usecase (interface) > repository (interface)
-                usecase (interface) < repository (interface)
-    Delivery <  usecase (interface)
+![Clean Architecture Layer](clean_layer.svg)
+
+```mermaid
+flowchart LR
+    ex[External]
+    de[Delivery]
+    uc[Usecase]
+    rp[Repository]
+    ps[Pubsub]
+    ot[Other]
+    db[(Database)]
+
+    subgraph in [Internal]
+        direction TB
+        de -.->|Interface / Domain| uc -.->|Interface / Domain| ps & ot & rp
+    end
+
+    ex -.->|DTO|in -.->|DAO|db
+
 ```
 
 
@@ -167,4 +191,5 @@ func (hl *roleHandler) Index(c echo.Context) error {
 - [spf13/viper](https://github.com/spf13/viper)
 - [golang/mock](https://github.com/golang/mock)
 - [Echo](https://echo.labstack.com)
+- [JWT](https://golang-jwt.github.io/jwt)
 - [cosmtrek/air](https://github.com/cosmtrek/air)

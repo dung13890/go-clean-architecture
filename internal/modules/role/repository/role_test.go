@@ -59,7 +59,7 @@ func TestFetchRole(t *testing.T) {
 			name: "OK",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "roles"`,
+					`SELECT * FROM "roles" WHERE "roles"."deleted_at" IS NULL`,
 				)
 				mock.ExpectQuery(query).WithArgs().WillReturnRows(sqlmock.NewRows(nil))
 			},
@@ -70,11 +70,11 @@ func TestFetchRole(t *testing.T) {
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "roles"`,
+					`SELECT * FROM "roles" WHERE "roles"."deleted_at" IS NULL`,
 				)
 				mock.ExpectQuery(query).WithArgs().WillReturnError(errRp)
 			},
-			res: []domain.Role{},
+			res: ([]domain.Role)(nil),
 			err: errRp,
 		},
 	}
@@ -106,7 +106,7 @@ func TestFindRole(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "slug", "updated_at", "created_at", "deleted_at"}).
 					AddRow(1, "name", "slug", timeNow, timeNow, nil)
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "roles" WHERE id = $1 ORDER BY "roles"."id" LIMIT 1`,
+					`SELECT * FROM "roles" WHERE "roles"."id" = $1 AND "roles"."deleted_at" IS NULL ORDER BY "roles"."id" LIMIT 1`,
 				)
 				mock.ExpectQuery(query).WithArgs(1).WillReturnRows(rows)
 			},
@@ -126,7 +126,7 @@ func TestFindRole(t *testing.T) {
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
 				query := regexp.QuoteMeta(
-					`SELECT * FROM "roles" WHERE id = $1 ORDER BY "roles"."id" LIMIT 1`,
+					`SELECT * FROM "roles" WHERE "roles"."id" = $1 AND "roles"."deleted_at" IS NULL ORDER BY "roles"."id" LIMIT 1`,
 				)
 				mock.ExpectQuery(query).WithArgs(2).WillReturnError(errRp)
 			},
@@ -162,14 +162,16 @@ func TestStoreRole(t *testing.T) {
 		{
 			name: "OK",
 			mock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 				query := regexp.QuoteMeta(
-					`INSERT INTO "roles" ("name","slug","created_at","updated_at","deleted_at")
+					`INSERT INTO "roles" ("created_at","updated_at","deleted_at","name","slug")
 								VALUES ($1,$2,$3,$4,$5) RETURNING "id"`,
 				)
 				mock.ExpectQuery(query).
-					WithArgs("name", "name", timeNow, timeNow, nil).
+					WithArgs(timeNow, timeNow, nil, "name", "name").
 					WillReturnRows(rows)
+				mock.ExpectCommit()
 			},
 			args: &domain.Role{
 				Name:      "name",
@@ -182,13 +184,15 @@ func TestStoreRole(t *testing.T) {
 		{
 			name: "NG",
 			mock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
 				query := regexp.QuoteMeta(
-					`INSERT INTO "roles" ("name","slug","created_at","updated_at","deleted_at")
+					`INSERT INTO "roles" ("created_at","updated_at","deleted_at","name","slug")
 								VALUES ($1,$2,$3,$4,$5) RETURNING "id"`,
 				)
 				mock.ExpectQuery(query).
-					WithArgs("name2", "name2", timeNow, timeNow, nil).
+					WithArgs(timeNow, timeNow, nil, "name2", "name2").
 					WillReturnError(errRp)
+				mock.ExpectRollback()
 			},
 			args: &domain.Role{
 				Name:      "name2",

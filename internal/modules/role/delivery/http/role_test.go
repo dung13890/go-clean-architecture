@@ -186,11 +186,11 @@ func TestHandlerStoreRole(t *testing.T) {
 	tests := []testCase{
 		{
 			name:     "OK",
-			argStore: `{"name":"admin", "slug":"admin"}`,
+			argStore: `{"name":"admin"}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				roleMock := domain.Role{}
-				_ = json.Unmarshal([]byte(`{"name":"admin", "slug":"admin"}`), &roleMock)
+				_ = json.Unmarshal([]byte(`{"name":"admin"}`), &roleMock)
 				usecaseMock.EXPECT().Store(context.Background(), &roleMock).
 					Times(1).Return(nil).AnyTimes()
 
@@ -230,11 +230,11 @@ func TestHandlerStoreRole(t *testing.T) {
 		},
 		{
 			name:     "BAD REQUEST",
-			argStore: `{"name": "test2", "slug": "test2"}`,
+			argStore: `{"name": "test2"}`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
 				roleMock := domain.Role{}
-				_ = json.Unmarshal([]byte(`{"name": "test2", "slug": "test2"}`), &roleMock)
+				_ = json.Unmarshal([]byte(`{"name": "test2"}`), &roleMock)
 
 				usecaseMock.EXPECT().Store(c.Request().Context(), &roleMock).Return(errNotFound).
 					Times(1).AnyTimes()

@@ -4,7 +4,6 @@ import (
 	"context"
 	"go-app/internal/domain"
 	"go-app/pkg/errors"
-	"go-app/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -20,31 +19,40 @@ func NewRepository(db *gorm.DB) domain.RoleRepository {
 }
 
 // Fetch will fetch content from db
-func (rp *RoleRepository) Fetch(c context.Context) ([]domain.Role, error) {
+func (rp *RoleRepository) Fetch(ctx context.Context) ([]domain.Role, error) {
+	dao := []Role{}
+	if err := rp.DB.WithContext(ctx).Find(&dao).Error; err != nil {
+		return nil, errors.Wrap(err)
+	}
+
 	roles := []domain.Role{}
-	if err := rp.DB.Find(&roles).Error; err != nil {
-		return roles, errors.Wrap(err)
+
+	for i := range dao {
+		r := convertToEntity(&dao[i])
+		roles = append(roles, *r)
 	}
 
 	return roles, nil
 }
 
 // Find will find content from db
-func (rp *RoleRepository) Find(c context.Context, id int) (*domain.Role, error) {
-	role := domain.Role{}
-	if err := rp.DB.Where("id = ?", id).First(&role).Error; err != nil {
+func (rp *RoleRepository) Find(ctx context.Context, id int) (*domain.Role, error) {
+	dao := Role{}
+	if err := rp.DB.WithContext(ctx).First(&dao, id).Error; err != nil {
 		return nil, errors.Wrap(err)
 	}
 
-	return &role, nil
+	return convertToEntity(&dao), nil
 }
 
 // Store will create data to db
-func (rp *RoleRepository) Store(c context.Context, role *domain.Role) error {
-	role.Slug = utils.Slugify(role.Name)
-	if err := rp.DB.Create(role).Error; err != nil {
+func (rp *RoleRepository) Store(ctx context.Context, role *domain.Role) error {
+	dao := convertToDao(role)
+	if err := rp.DB.WithContext(ctx).Create(&dao).Error; err != nil {
 		return errors.Wrap(err)
 	}
+
+	*role = *convertToEntity(dao)
 
 	return nil
 }

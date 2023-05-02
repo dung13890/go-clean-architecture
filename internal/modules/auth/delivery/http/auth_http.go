@@ -1,6 +1,7 @@
 package http
 
 import (
+	"go-app/internal/constants"
 	"go-app/internal/domain"
 	"net/http"
 
@@ -13,13 +14,15 @@ type AuthHandler struct {
 }
 
 // NewHandler will initialize the Auth endpoint
-func NewHandler(g *echo.Group, uc domain.AuthUsecase) {
+func NewHandler(guest *echo.Group, auth *echo.Group, uc domain.AuthUsecase) {
 	handler := &AuthHandler{
 		Usecase: uc,
 	}
 
-	g.POST("/login", handler.Login)
-	g.POST("/register", handler.Register)
+	guest.POST("/login", handler.Login)
+	auth.POST("/logout", handler.Logout)
+	auth.GET("/me", handler.Me)
+	guest.POST("/register", handler.Register)
 }
 
 // Login for user
@@ -34,12 +37,24 @@ func (hl *AuthHandler) Login(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	claims, tokenStr, err := hl.Usecase.Login(ctx, ConvertLoginRequestToEntity(userReq))
+	claims, tokenStr, err := hl.Usecase.Login(ctx, convertLoginRequestToEntity(userReq))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, ConvertUserToLoginResponse(*claims, tokenStr))
+	return c.JSON(http.StatusOK, convertUserToLoginResponse(*claims, tokenStr))
+}
+
+// Logout for user
+func (hl *AuthHandler) Logout(c echo.Context) error {
+	return c.JSON(http.StatusOK, StatusResponse{Status: true})
+}
+
+// Logout for user
+func (hl *AuthHandler) Me(c echo.Context) error {
+	user, _ := c.Get(constants.GuardJWT).(*domain.User)
+
+	return c.JSON(http.StatusOK, convertUserToUserResponse(user))
 }
 
 // Register for user
@@ -54,10 +69,10 @@ func (hl *AuthHandler) Register(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	user, err := hl.Usecase.Register(ctx, ConvertRegisterRequestToeEntity(userReq))
+	user, err := hl.Usecase.Register(ctx, convertRegisterRequestToEntity(userReq))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, ConvertUserToRegisterResponse(user))
+	return c.JSON(http.StatusCreated, convertUserToUserResponse(user))
 }
