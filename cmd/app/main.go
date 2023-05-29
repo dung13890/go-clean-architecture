@@ -4,6 +4,7 @@ import (
 	"go-app/config"
 	"go-app/internal/app"
 	"go-app/pkg/logger"
+	"time"
 )
 
 func main() {
@@ -13,6 +14,12 @@ func main() {
 	}
 
 	conf := config.GetAppConfig()
+	// Set timezone
+	loc, err := time.LoadLocation(conf.AppTimeZone)
+	if err != nil {
+		logger.Error().Fatal(err)
+	}
+	time.Local = loc
 
 	if err := app.Run(conf); err != nil {
 		logger.Error().Fatal(err)

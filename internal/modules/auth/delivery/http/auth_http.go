@@ -3,6 +3,7 @@ package http
 import (
 	"go-app/internal/constants"
 	"go-app/internal/domain"
+	"go-app/pkg/errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -13,66 +14,123 @@ type AuthHandler struct {
 	Usecase domain.AuthUsecase
 }
 
-// NewHandler will initialize the Auth endpoint
-func NewHandler(guest *echo.Group, auth *echo.Group, uc domain.AuthUsecase) {
-	handler := &AuthHandler{
-		Usecase: uc,
-	}
-
-	guest.POST("/login", handler.Login)
-	auth.POST("/logout", handler.Logout)
-	auth.GET("/me", handler.Me)
-	guest.POST("/register", handler.Register)
-}
-
 // Login for user
 func (hl *AuthHandler) Login(c echo.Context) error {
 	userReq := new(UserLoginRequest)
 	if err := c.Bind(userReq); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
+		return errors.ErrBadRequest.Wrap(err)
 	}
 
 	if err := c.Validate(userReq); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
+		return errors.ErrUnprocessableEntity.Wrap(err)
 	}
 
 	ctx := c.Request().Context()
-	claims, tokenStr, err := hl.Usecase.Login(ctx, convertLoginRequestToEntity(userReq))
+	user := convertLoginRequestToEntity(userReq)
+	tokenStr, exp, err := hl.Usecase.Login(ctx, user, c.RealIP())
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+		return errors.Throw(err)
 	}
 
-	return c.JSON(http.StatusOK, convertUserToLoginResponse(*claims, tokenStr))
+	return c.JSON(http.StatusOK, convertUserToLoginResponse(*user, tokenStr, exp))
 }
 
 // Logout for user
 func (hl *AuthHandler) Logout(c echo.Context) error {
+	token := c.Get("user")
+	ctx := c.Request().Context()
+	if err := hl.Usecase.Logout(ctx, token); err != nil {
+		return errors.Throw(err)
+	}
+
 	return c.JSON(http.StatusOK, StatusResponse{Status: true})
 }
 
-// Logout for user
-func (hl *AuthHandler) Me(c echo.Context) error {
+// Me for user
+func (_ *AuthHandler) Me(c echo.Context) error {
 	user, _ := c.Get(constants.GuardJWT).(*domain.User)
 
-	return c.JSON(http.StatusOK, convertUserToUserResponse(user))
+	return c.JSON(http.StatusOK, convertUserEntityToResponse(user))
 }
 
 // Register for user
 func (hl *AuthHandler) Register(c echo.Context) error {
 	userReq := &UserRegisterRequest{}
 	if err := c.Bind(userReq); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
+		return errors.ErrBadRequest.Wrap(err)
 	}
 
 	if err := c.Validate(userReq); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, &ErrorResponse{Message: err.Error()})
+		return errors.ErrUnprocessableEntity.Wrap(err)
 	}
 
 	ctx := c.Request().Context()
 	user, err := hl.Usecase.Register(ctx, convertRegisterRequestToEntity(userReq))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, &ErrorResponse{Message: err.Error()})
+		return errors.Throw(err)
 	}
 
-	return c.JSON(http.StatusCreated, convertUserToUserResponse(user))
+	return c.JSON(http.StatusCreated, convertUserEntityToResponse(user))
+}
+
+// ChangePassword will return status when change password success
+func (hl *AuthHandler) ChangePassword(c echo.Context) error {
+	userReq := &UserChangePasswordRequest{}
+	if err := c.Bind(userReq); err != nil {
+		return errors.ErrBadRequest.Wrap(err)
+	}
+
+	if err := c.Validate(userReq); err != nil {
+		return errors.ErrUnprocessableEntity.Wrap(err)
+	}
+
+	user, ok := c.Get(constants.GuardJWT).(*domain.User)
+	if !ok {
+		return errors.ErrBadRequest.Trace()
+	}
+
+	ctx := c.Request().Context()
+	if err := hl.Usecase.ChangePassword(ctx, user, userReq.ConfirmPassword, userReq.Password); err != nil {
+		return errors.Throw(err)
+	}
+
+	return c.JSON(http.StatusOK, StatusResponse{Status: true})
+}
+
+// ForgotPassword will return status when verify email success
+func (hl *AuthHandler) ForgotPassword(c echo.Context) error {
+	userReq := &UserForgotRequest{}
+	if err := c.Bind(userReq); err != nil {
+		return errors.ErrBadRequest.Wrap(err)
+	}
+
+	if err := c.Validate(userReq); err != nil {
+		return errors.ErrUnprocessableEntity.Wrap(err)
+	}
+
+	ctx := c.Request().Context()
+	if err := hl.Usecase.ForgotPassword(ctx, userReq.Email); err != nil {
+		return errors.Throw(err)
+	}
+
+	return c.JSON(http.StatusOK, StatusResponse{Status: true})
+}
+
+// ResetPassword use token from email to reset password
+func (hl *AuthHandler) ResetPassword(c echo.Context) error {
+	userReq := &UserResetPasswordRequest{}
+	if err := c.Bind(userReq); err != nil {
+		return errors.ErrBadRequest.Wrap(err)
+	}
+
+	if err := c.Validate(userReq); err != nil {
+		return errors.ErrUnprocessableEntity.Wrap(err)
+	}
+
+	ctx := c.Request().Context()
+	if err := hl.Usecase.ResetPassword(ctx, userReq.Token, userReq.Password); err != nil {
+		return errors.Throw(err)
+	}
+
+	return c.JSON(http.StatusOK, StatusResponse{Status: true})
 }

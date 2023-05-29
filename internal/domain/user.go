@@ -19,18 +19,23 @@ type User struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-// UserRepository represent the user's usecases
+// UserRepository represent the User's repository contract
 type UserRepository interface {
 	Fetch(context.Context) ([]User, error)
 	Find(ctx context.Context, id int) (*User, error)
 	Store(ctx context.Context, u *User) error
 	FindByQuery(ctx context.Context, q User) (*User, error)
+	CheckExists(ctx context.Context, q User, id *int) (bool, error)
+	Update(ctx context.Context, u *User) error
+	Delete(ctx context.Context, id int) error
 }
 
-// UserUsecase represent the user's repository contract
+// UserUsecase represent the User's usecase contract
 type UserUsecase interface {
 	Fetch(context.Context) ([]User, error)
 	Find(ctx context.Context, id int) (*User, error)
 	Store(ctx context.Context, u *User) error
 	FindByQuery(ctx context.Context, q User) (*User, error)
+	Update(ctx context.Context, id int, u *User) error
+	Delete(ctx context.Context, id int) error
 }

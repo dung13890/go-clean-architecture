@@ -1,10 +1,8 @@
 package logger
 
 import (
-	// "fmt"
 	"log"
 	"os"
-	// "runtime"
 )
 
 var (
@@ -21,16 +19,16 @@ func InitLogger() {
 }
 
 // Info Log
-func Info(v ...any) *log.Logger {
+func Info(_ ...any) *log.Logger {
 	return info
 }
 
 // Debug Log
-func Debug(v ...any) *log.Logger {
+func Debug(_ ...any) *log.Logger {
 	return debug
 }
 
 // Error Log
-func Error(v ...any) *log.Logger {
+func Error(_ ...any) *log.Logger {
 	return err
 }

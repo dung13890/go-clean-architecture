@@ -25,11 +25,11 @@ var expectedResults = []ExpectedResult{
 	},
 	{
 		title: "Here I go PyGrunn'13!",
-		slug:  "here-i-go-pygrunn13",
+		slug:  "here-i-go-pygrunn-13",
 	},
 	{
 		title: "How-to install GNOME 3 instead of Unity on Ubuntu 11.04",
-		slug:  "how-to-install-gnome-3-instead-of-unity-on-ubuntu-1104",
+		slug:  "how-to-install-gnome-3-instead-of-unity-on-ubuntu-11-04",
 	},
 }
 

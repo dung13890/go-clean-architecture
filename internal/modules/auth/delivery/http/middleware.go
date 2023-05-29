@@ -4,6 +4,7 @@ import (
 	"go-app/config"
 	"go-app/internal/constants"
 	"go-app/internal/domain"
+	"go-app/internal/impl/service"
 	"go-app/pkg/errors"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -11,10 +12,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Authenticate() echo.MiddlewareFunc {
+// SetupJWT .-
+func SetupJWT() echo.MiddlewareFunc {
 	jwtConf := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(domain.Claims)
+			return new(service.Claims)
 		},
 		SigningKey: []byte(config.GetAppConfig().AppJWTKey),
 	}
@@ -22,24 +24,14 @@ func Authenticate() echo.MiddlewareFunc {
 	return echojwt.WithConfig(jwtConf)
 }
 
-func SetUserFromClaims() echo.MiddlewareFunc {
+// Authenticated .-
+func Authenticated(svc domain.JWTService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			token, ok := c.Get("user").(*jwt.Token)
-			if !ok {
-				return errors.New("JWT token missing or invalid")
-			}
-
-			claims, ok := token.Claims.(*domain.Claims)
-			if !ok {
-				return errors.New("Failed to cast claims as jwt.MapClaims")
-			}
-
-			user := &domain.User{
-				ID:     claims.ID,
-				Name:   claims.Name,
-				Email:  claims.Email,
-				RoleID: claims.RoleID,
+			token := c.Get("user")
+			user, err := svc.Decode(c.Request().Context(), token)
+			if err != nil {
+				return errors.Throw(err)
 			}
 
 			c.Set(constants.GuardJWT, user)

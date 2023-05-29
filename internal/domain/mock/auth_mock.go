@@ -35,20 +35,62 @@ func (m *MockAuthUsecase) EXPECT() *MockAuthUsecaseMockRecorder {
 	return m.recorder
 }
 
-// Login mocks base method.
-func (m *MockAuthUsecase) Login(ctx context.Context, u *domain.User) (*domain.Claims, string, error) {
+// ChangePassword mocks base method.
+func (m *MockAuthUsecase) ChangePassword(ctx context.Context, u *domain.User, confirmPW, pw string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Login", ctx, u)
-	ret0, _ := ret[0].(*domain.Claims)
-	ret1, _ := ret[1].(string)
+	ret := m.ctrl.Call(m, "ChangePassword", ctx, u, confirmPW, pw)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangePassword indicates an expected call of ChangePassword.
+func (mr *MockAuthUsecaseMockRecorder) ChangePassword(ctx, u, confirmPW, pw interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePassword", reflect.TypeOf((*MockAuthUsecase)(nil).ChangePassword), ctx, u, confirmPW, pw)
+}
+
+// ForgotPassword mocks base method.
+func (m *MockAuthUsecase) ForgotPassword(ctx context.Context, email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgotPassword", ctx, email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ForgotPassword indicates an expected call of ForgotPassword.
+func (mr *MockAuthUsecaseMockRecorder) ForgotPassword(ctx, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgotPassword", reflect.TypeOf((*MockAuthUsecase)(nil).ForgotPassword), ctx, email)
+}
+
+// Login mocks base method.
+func (m *MockAuthUsecase) Login(ctx context.Context, u *domain.User, ip string) (string, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Login", ctx, u, ip)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
 // Login indicates an expected call of Login.
-func (mr *MockAuthUsecaseMockRecorder) Login(ctx, u interface{}) *gomock.Call {
+func (mr *MockAuthUsecaseMockRecorder) Login(ctx, u, ip interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAuthUsecase)(nil).Login), ctx, u)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAuthUsecase)(nil).Login), ctx, u, ip)
+}
+
+// Logout mocks base method.
+func (m *MockAuthUsecase) Logout(ctx context.Context, token any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logout", ctx, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Logout indicates an expected call of Logout.
+func (mr *MockAuthUsecaseMockRecorder) Logout(ctx, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockAuthUsecase)(nil).Logout), ctx, token)
 }
 
 // Register mocks base method.
@@ -64,4 +106,18 @@ func (m *MockAuthUsecase) Register(ctx context.Context, u *domain.User) (*domain
 func (mr *MockAuthUsecaseMockRecorder) Register(ctx, u interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockAuthUsecase)(nil).Register), ctx, u)
+}
+
+// ResetPassword mocks base method.
+func (m *MockAuthUsecase) ResetPassword(ctx context.Context, token, pw string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetPassword", ctx, token, pw)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResetPassword indicates an expected call of ResetPassword.
+func (mr *MockAuthUsecaseMockRecorder) ResetPassword(ctx, token, pw interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockAuthUsecase)(nil).ResetPassword), ctx, token, pw)
 }

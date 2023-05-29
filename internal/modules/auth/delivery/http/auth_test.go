@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"go-app/internal/domain"
+	pkgErrors "go-app/pkg/errors"
 	"go-app/pkg/validate"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -22,35 +22,22 @@ import (
 )
 
 var (
-	errNotFound           = errors.New("not found")
-	errRegisterInvalidate = errors.New(strings.Join([]string{
+	errAuthNotFound           = errors.New("not found")
+	errAuthRegisterInvalidate = errors.New(strings.Join([]string{
 		"Name must have a value!;Email must have a value!",
 		"RoleID must have a value!",
 		"Password must have a value!",
 	}, ";"))
-	errLoginInvalidate = errors.New(strings.Join([]string{
+	errAuthLoginInvalidate = errors.New(strings.Join([]string{
 		"Email must have a value!",
 		"Password must have a value!",
 	}, ";"))
 )
 
-type testCase struct {
+type authTestCase struct {
 	name       string
 	argStore   string
 	checkEqual func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context)
-}
-
-func TestNewAuthHandler(t *testing.T) {
-	t.Parallel()
-	e := echo.New()
-	g := e.Group("/v1")
-	ga := e.Group("")
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	usecaseMock := mockDomain.NewMockAuthUsecase(ctrl)
-	authHttp.NewHandler(g, ga, usecaseMock)
 }
 
 func TestHandlerRegisterUser(t *testing.T) {
@@ -65,18 +52,16 @@ func TestHandlerRegisterUser(t *testing.T) {
 
 	authHandler := authHttp.AuthHandler{Usecase: usecaseMock}
 
-	tests := []testCase{
+	tests := []authTestCase{
 		{
 			name:     "UNPROCESSABLE ENTITY",
 			argStore: `[]`,
+
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				if assert.NoError(t, authHandler.Register(c)) {
-					errorResponse := &authHttp.ErrorResponse{}
-					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
 
-					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-				}
+				err := authHandler.Register(c)
+				assert.Equal(t, err.Error(), pkgErrors.ErrBadRequest.Error())
 			},
 		},
 		{
@@ -108,14 +93,13 @@ func TestHandlerRegisterUser(t *testing.T) {
 				_ = json.Unmarshal([]byte(`{}`), userMock)
 
 				usecaseMock.EXPECT().Register(c.Request().Context(), userMock).Return(&domain.User{},
-					errRegisterInvalidate).Times(1).AnyTimes()
-				if assert.NoError(t, authHandler.Register(c)) {
-					errorResponse := &authHttp.ErrorResponse{}
-					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
+					errAuthRegisterInvalidate).Times(1).AnyTimes()
 
-					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-					assert.Equal(t, &authHttp.ErrorResponse{Message: errRegisterInvalidate.Error()},
-						errorResponse)
+				if assert.Error(t, errAuthRegisterInvalidate, authHandler.Register(c)) {
+					var bErr *pkgErrors.BaseError
+					if errors.As(errAuthRegisterInvalidate, &bErr) {
+						assert.ErrorIs(t, errAuthRegisterInvalidate, bErr.Unwrap())
+					}
 				}
 			},
 		},
@@ -129,14 +113,13 @@ func TestHandlerRegisterUser(t *testing.T) {
 								"role_id": 2, "password": "user1"}`), userMock)
 
 				usecaseMock.EXPECT().Register(c.Request().Context(), userMock).Return(&domain.User{},
-					errRegisterInvalidate).Times(1).AnyTimes()
-				if assert.NoError(t, authHandler.Register(c)) {
-					errorResponse := &authHttp.ErrorResponse{}
-					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
+					errAuthRegisterInvalidate).Times(1).AnyTimes()
 
-					assert.Equal(t, http.StatusBadRequest, rec.Code)
-					assert.Equal(t, &authHttp.ErrorResponse{Message: errRegisterInvalidate.Error()},
-						errorResponse)
+				if assert.Error(t, errAuthRegisterInvalidate, authHandler.Register(c)) {
+					var bErr *pkgErrors.BaseError
+					if errors.As(errAuthRegisterInvalidate, &bErr) {
+						assert.ErrorIs(t, errAuthRegisterInvalidate, bErr.Unwrap())
+					}
 				}
 			},
 		},
@@ -166,18 +149,14 @@ func TestHandlerLoginUser(t *testing.T) {
 
 	authHandler := authHttp.AuthHandler{Usecase: usecaseMock}
 
-	tests := []testCase{
+	tests := []authTestCase{
 		{
 			name:     "UNPROCESSABLE ENTITY",
 			argStore: `[]`,
 			checkEqual: func(t *testing.T, rec *httptest.ResponseRecorder, c echo.Context) {
 				t.Helper()
-				if assert.NoError(t, authHandler.Login(c)) {
-					errorResponse := &authHttp.ErrorResponse{}
-					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
-
-					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-				}
+				err := authHandler.Login(c)
+				assert.Equal(t, err.Error(), pkgErrors.ErrBadRequest.Error())
 			},
 		},
 		{
@@ -189,13 +168,8 @@ func TestHandlerLoginUser(t *testing.T) {
 				userMock := &domain.User{}
 				_ = json.Unmarshal([]byte(`{"email": "user1@example", "password": "Abc1233"}`),
 					userMock)
-				usecaseMock.EXPECT().Login(context.Background(), userMock).Times(1).
-					Return(&domain.Claims{
-						RegisteredClaims: jwt.RegisteredClaims{
-							IssuedAt:  jwt.NewNumericDate(now),
-							ExpiresAt: jwt.NewNumericDate(now),
-						},
-					}, "string_token", nil).AnyTimes()
+				usecaseMock.EXPECT().Login(context.Background(), userMock, gomock.Any()).Times(1).
+					Return("string_token", now.Unix(), nil).AnyTimes()
 
 				if assert.NoError(t, authHandler.Login(c)) {
 					userResponse := &authHttp.UserLoginResponse{}
@@ -203,6 +177,7 @@ func TestHandlerLoginUser(t *testing.T) {
 
 					assert.Equal(t, http.StatusOK, rec.Code)
 					assert.Equal(t, &authHttp.UserLoginResponse{
+						Email: "user1@example",
 						Auth: authHttp.AuthResponse{
 							AccessToken: "string_token",
 							ExpiresAt:   now.Unix(),
@@ -219,15 +194,16 @@ func TestHandlerLoginUser(t *testing.T) {
 				userMock := &domain.User{}
 				_ = json.Unmarshal([]byte(`{}`), userMock)
 
-				usecaseMock.EXPECT().Login(c.Request().Context(), userMock).Return(&domain.Claims{}, "",
-					errLoginInvalidate).Times(1).AnyTimes()
-				if assert.NoError(t, authHandler.Login(c)) {
-					errorResponse := &authHttp.ErrorResponse{}
-					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
+				usecaseMock.
+					EXPECT().
+					Login(c.Request().Context(), userMock, gomock.Any()).
+					Return("", int64(0), errAuthLoginInvalidate).Times(1).AnyTimes()
 
-					assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-					assert.Equal(t, &authHttp.ErrorResponse{Message: errLoginInvalidate.Error()},
-						errorResponse)
+				if assert.Error(t, errAuthLoginInvalidate, authHandler.Login(c)) {
+					var bErr *pkgErrors.BaseError
+					if errors.As(errAuthLoginInvalidate, &bErr) {
+						assert.ErrorIs(t, errAuthLoginInvalidate, bErr.Unwrap())
+					}
 				}
 			},
 		},
@@ -240,15 +216,16 @@ func TestHandlerLoginUser(t *testing.T) {
 				_ = json.Unmarshal([]byte(`{"email": "user2@example", "password": "Abc1234"}`),
 					userMock)
 
-				usecaseMock.EXPECT().Login(c.Request().Context(), userMock).Return(&domain.Claims{},
-					"", errNotFound).Times(1).AnyTimes()
-				if assert.NoError(t, authHandler.Login(c)) {
-					errorResponse := &authHttp.ErrorResponse{}
-					_ = json.Unmarshal(rec.Body.Bytes(), errorResponse)
+				usecaseMock.
+					EXPECT().
+					Login(c.Request().Context(), userMock, gomock.Any()).
+					Return("", int64(0), errAuthNotFound).Times(1).AnyTimes()
 
-					assert.Equal(t, http.StatusBadRequest, rec.Code)
-					assert.Equal(t, &authHttp.ErrorResponse{Message: errNotFound.Error()},
-						errorResponse)
+				if assert.Error(t, errAuthNotFound, authHandler.Login(c)) {
+					var bErr *pkgErrors.BaseError
+					if errors.As(errAuthNotFound, &bErr) {
+						assert.ErrorIs(t, errAuthNotFound, bErr.Unwrap())
+					}
 				}
 			},
 		},

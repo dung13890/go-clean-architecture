@@ -32,7 +32,7 @@ func NewGormDB(db config.Database) (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err)
+		return nil, errors.ErrUnexpectedDBError.Wrap(err)
 	}
 
 	return dbConnect, nil

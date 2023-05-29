@@ -16,13 +16,15 @@ linters:
     - staticcheck # is a go vet on steroids, applying a ton of static analysis checks
     - typecheck # like the front-end of a Go compiler, parses and type-checks Go code
     - unused # checks for unused constants, variables, functions and types
+    - revive # fast, configurable, extensible, flexible, and beautiful linter for go. drop-in replacement of golint.
     ## disabled by default
     - asasalint # checks for pass []any as any in variadic func(...any)
     - asciicheck # checks that your code does not contain non-ASCII identifiers
     - bidichk # checks for dangerous unicode character sequences
     - bodyclose # checks whether HTTP response body is closed successfully
     - cyclop # checks function and package cyclomatic complexity
-    - dupl # tool for code clone detection
+    # - dupl # tool for code clone detection
+    - goerr113 # go linter to check the errors handling expressions
     - durationcheck # checks for two durations multiplied together
     - errname # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
     - errorlint # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
@@ -71,9 +73,23 @@ linters:
     - whitespace # detects leading and trailing whitespace
 
 linters-settings:
+  gomnd:
+    ignored-files:
+      'errors/code.go'
+  revive:
+    ignore-generated-header: true
+    severity: error
+    rules:
+      # https://github.com/mgechev/revive#available-rules
+      - name: exported
+      - name: unused-parameter
+      - name: unused-receiver
+      - name: waitgroup-by-value
+
   funlen:
     lines: 270
     statements: 50
+
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 35
@@ -106,6 +122,7 @@ issues:
     - path: _test\.go
       linters:
         - bodyclose
+        - revive
         - scopelint
         - funlen
         - gocognit

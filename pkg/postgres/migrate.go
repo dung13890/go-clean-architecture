@@ -38,7 +38,7 @@ func Migrate(db config.Database) error {
 
 	m, err := migrate.New("file://db/migrations", uri)
 	if err != nil {
-		return errors.Wrap(err)
+		return errors.ErrUnexpectedDBError.Wrap(err)
 	}
 
 	method := "up"
@@ -70,7 +70,7 @@ func up(m *migrate.Migrate) {
 		}
 		v, _, err := m.Version()
 		if err != nil {
-			logger.Error().Fatal(err)
+			logger.Debug().Fatal(err)
 		}
 		logger.Info().Printf("Migrate up version is %v", v)
 	}
@@ -87,11 +87,11 @@ func down(m *migrate.Migrate) {
 	for remain > 0 {
 		v, _, err := m.Version()
 		if err != nil {
-			logger.Error().Fatal(err)
+			logger.Debug().Fatal(err)
 		}
 		logger.Info().Printf("Migrate down version is %v", v)
 		if err := m.Steps(-1); err != nil {
-			logger.Error().Fatal(err)
+			logger.Debug().Fatal(err)
 		}
 		remain--
 	}

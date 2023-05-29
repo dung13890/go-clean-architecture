@@ -4,21 +4,20 @@ package domain
 
 import (
 	"context"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
-// Claims is struct claims for jwt
-type Claims struct {
-	ID     uint   `json:"id"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	RoleID int    `json:"role_id"`
-	jwt.RegisteredClaims
-}
-
-// AuthUsecase represent the user's repository contract
+// AuthUsecase represent the auth's usecase contract
 type AuthUsecase interface {
+	// Register new user
 	Register(ctx context.Context, u *User) (*User, error)
-	Login(ctx context.Context, u *User) (*Claims, string, error)
+	// Login user
+	Login(ctx context.Context, u *User, ip string) (string, int64, error)
+	// Logout user
+	Logout(ctx context.Context, token any) error
+	// ChangePassword user
+	ChangePassword(ctx context.Context, u *User, confirmPW, pw string) error
+	// ForgotPassword user
+	ForgotPassword(ctx context.Context, email string) error
+	// ResetPassword user
+	ResetPassword(ctx context.Context, token, pw string) error
 }

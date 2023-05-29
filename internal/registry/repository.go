@@ -1,23 +1,19 @@
 package registry
 
 import (
-	"go-app/internal/domain"
-	roleRepo "go-app/internal/modules/role/repository"
-	userRepo "go-app/internal/modules/user/repository"
+	authRepo "go-app/internal/modules/auth/repository"
 
 	"gorm.io/gorm"
 )
 
 // Repository registry
 type Repository struct {
-	RoleRepository domain.RoleRepository
-	UserRepository domain.UserRepository
+	AuthModule *authRepo.Repository
 }
 
-// NewRepository implements from interface
+// NewRepository implements from interface for modules
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		RoleRepository: roleRepo.NewRepository(db),
-		UserRepository: userRepo.NewRepository(db),
+		AuthModule: authRepo.NewRepository(db),
 	}
 }

@@ -5,9 +5,11 @@ import (
 	"go-app/config"
 	"go-app/internal/constants"
 	"go-app/internal/registry"
+	"go-app/pkg/cache"
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
 	"go-app/pkg/postgres"
+	"go-app/pkg/redis"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,11 +34,15 @@ func Run(conf config.AppConfig) error {
 		}
 	}
 
+	rdb := redis.New(config.GetRedisConfig())
+	cacheManager := cache.NewRedisStore(rdb)
+
 	e := echo.New()
 
 	repo := registry.NewRepository(db)
-	usecase := registry.NewUsecase(repo)
-	registry.NewHTTPHandler(e, usecase)
+	service := registry.NewService(cacheManager)
+	usecase := registry.NewUsecase(repo, service)
+	registry.NewHTTPHandler(e, usecase, service)
 
 	s := &http.Server{
 		Handler:     e,
@@ -64,7 +70,7 @@ func Run(conf config.AppConfig) error {
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ConnectTimeout)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
-		return errors.Wrap(err)
+		return errors.ErrInternalServerError.Wrap(err)
 	}
 
 	return nil
