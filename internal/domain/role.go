@@ -17,16 +17,21 @@ type Role struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
-// RoleRepository represent the role's usecases
+// RoleRepository represent the Role's repository contract
 type RoleRepository interface {
 	Fetch(context.Context) ([]Role, error)
 	Find(ctx context.Context, id int) (*Role, error)
+	CheckExists(ctx context.Context, q Role, id *int) (bool, error)
 	Store(ctx context.Context, u *Role) error
+	Update(ctx context.Context, u *Role) error
+	Delete(ctx context.Context, id int) error
 }
 
-// RoleUsecase represent the role's repository contract
+// RoleUsecase represent the Role's usecase contract
 type RoleUsecase interface {
 	Fetch(context.Context) ([]Role, error)
 	Find(ctx context.Context, id int) (*Role, error)
 	Store(ctx context.Context, u *Role) error
+	Update(ctx context.Context, id int, u *Role) error
+	Delete(ctx context.Context, id int) error
 }

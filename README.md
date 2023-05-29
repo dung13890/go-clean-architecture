@@ -1,5 +1,6 @@
 # go-clean-architecture
 ![workflow status](https://github.com/dung13890/go-clean-architecture/actions/workflows/go-ci.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Codebase for golang use clean architecture.
 
@@ -20,6 +21,7 @@ More at [https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture
 - [Quick start](#quick-start)
 - [Project structure](#project-structure)
 - [Tools Used](#tools-used)
+- [Tools Generate](#tool-generate)
 
 ## Quick start
 Below are some modules included in this project:
@@ -36,6 +38,9 @@ docker compose build
 
 Start development:
 ```bash
+# Install dependencies
+go mod tidy
+
 # Copy env
 cp .env.example .env
 
@@ -89,6 +94,31 @@ curl -X POST 'localhost:8080/api/login' \
     "password" : "password"
 }'
 ```
+
+## Tool Generate
+If you need to generate a code base like this architecture, you can use [go-base-gen](https://github.com/dung13890/go-base-gen) tool.
+You can read more about the tool at [README](https://github.com/dung13890/go-base-gen/blob/master/README.md#usage)
+```bash
+NAME:
+   go-base-gen - Use this tool to generate base code
+
+USAGE:
+   go-base-gen [global options] command [command options] [arguments...]
+
+VERSION:
+   v1.0.0
+
+COMMANDS:
+   project  Generate base code for go project use clean architecture
+   domain   Create new domain in project
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h     show help
+   --version, -v  print only the version (default: false)
+```
+
+The [go-base-gen](https://github.com/dung13890/go-base-gen) tool was created with the purpose to help developers save their time in creating a project with a clean architecture. The tool will generate the code base for you, you just need to focus on the business logic.
 
 ## Project structure
 ![Clean Architecture](CleanArchitecture.jpeg)
@@ -193,3 +223,6 @@ func (hl *roleHandler) Index(c echo.Context) error {
 - [Echo](https://echo.labstack.com)
 - [JWT](https://golang-jwt.github.io/jwt)
 - [cosmtrek/air](https://github.com/cosmtrek/air)
+- [go-base-gen](https://github.com/dung13890/go-base-gen)
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/dung13890)

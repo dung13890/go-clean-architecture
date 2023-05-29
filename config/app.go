@@ -13,6 +13,7 @@ type AppConfig struct {
 	AllowedOrigin string `mapstructure:"APP_ALLOWED_ORIGIN"`
 	AppHost       string `mapstructure:"APP_HOST"`
 	AppJWTKey     string `mapstructure:"APP_JWT_KEY"`
+	AppTimeZone   string `mapstructure:"APP_TIME_ZONE"`
 }
 
 // LoadConfig config setting from .env.
@@ -20,7 +21,7 @@ func LoadConfig() error {
 	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {
-		return errors.Wrap(err)
+		return errors.ErrInternalServerError.Wrap(err)
 	}
 
 	return nil

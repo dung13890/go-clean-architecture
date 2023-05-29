@@ -35,6 +35,35 @@ func (m *MockRoleRepository) EXPECT() *MockRoleRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CheckExists mocks base method.
+func (m *MockRoleRepository) CheckExists(ctx context.Context, q domain.Role, id *int) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckExists", ctx, q, id)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckExists indicates an expected call of CheckExists.
+func (mr *MockRoleRepositoryMockRecorder) CheckExists(ctx, q, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckExists", reflect.TypeOf((*MockRoleRepository)(nil).CheckExists), ctx, q, id)
+}
+
+// Delete mocks base method.
+func (m *MockRoleRepository) Delete(ctx context.Context, id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRoleRepositoryMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleRepository)(nil).Delete), ctx, id)
+}
+
 // Fetch mocks base method.
 func (m *MockRoleRepository) Fetch(arg0 context.Context) ([]domain.Role, error) {
 	m.ctrl.T.Helper()
@@ -79,6 +108,20 @@ func (mr *MockRoleRepositoryMockRecorder) Store(ctx, u interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockRoleRepository)(nil).Store), ctx, u)
 }
 
+// Update mocks base method.
+func (m *MockRoleRepository) Update(ctx context.Context, u *domain.Role) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, u)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockRoleRepositoryMockRecorder) Update(ctx, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRoleRepository)(nil).Update), ctx, u)
+}
+
 // MockRoleUsecase is a mock of RoleUsecase interface.
 type MockRoleUsecase struct {
 	ctrl     *gomock.Controller
@@ -100,6 +143,20 @@ func NewMockRoleUsecase(ctrl *gomock.Controller) *MockRoleUsecase {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleUsecase) EXPECT() *MockRoleUsecaseMockRecorder {
 	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockRoleUsecase) Delete(ctx context.Context, id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRoleUsecaseMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleUsecase)(nil).Delete), ctx, id)
 }
 
 // Fetch mocks base method.
@@ -144,4 +201,18 @@ func (m *MockRoleUsecase) Store(ctx context.Context, u *domain.Role) error {
 func (mr *MockRoleUsecaseMockRecorder) Store(ctx, u interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockRoleUsecase)(nil).Store), ctx, u)
+}
+
+// Update mocks base method.
+func (m *MockRoleUsecase) Update(ctx context.Context, id int, u *domain.Role) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, id, u)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockRoleUsecaseMockRecorder) Update(ctx, id, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRoleUsecase)(nil).Update), ctx, id, u)
 }

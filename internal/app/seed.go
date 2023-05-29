@@ -9,8 +9,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	roleRepository "go-app/internal/modules/role/repository"
-	userRepository "go-app/internal/modules/user/repository"
+	authModule "go-app/internal/modules/auth/repository"
 )
 
 var pathJSON = "db/seeds/data.json"
@@ -24,35 +23,39 @@ type seedData struct {
 func Seed(dbConfig config.Database) error {
 	db, err := postgres.NewGormDB(dbConfig)
 	if err != nil {
-		return errors.Wrap(err)
+		return errors.ErrInternalServerError.Wrap(err)
 	}
 
-	userRepo := userRepository.NewRepository(db)
-	roleRepo := roleRepository.NewRepository(db)
+	authModule := authModule.NewRepository(db)
 
 	viper.SetConfigFile(pathJSON)
-	err = viper.ReadInConfig()
-	if err != nil {
-		return errors.Wrap(err)
+	if err = viper.ReadInConfig(); err != nil {
+		return errors.ErrInternalServerError.Wrap(err)
 	}
 
 	data := seedData{}
-	err = viper.Unmarshal(&data)
-	if err != nil {
-		return errors.Wrap(err)
+	if err := viper.Unmarshal(&data); err != nil {
+		return errors.ErrInternalServerError.Wrap(err)
 	}
 
-	for i := range data.Roles {
-		err = roleRepo.Store(context.Background(), &data.Roles[i])
-		if err != nil {
-			return errors.Wrap(err)
+	if err := data.seedAuth(authModule); err != nil {
+		return errors.Throw(err)
+	}
+
+	return nil
+}
+
+// seedAuth is function that seed auth data
+func (seed *seedData) seedAuth(md *authModule.Repository) error {
+	for i := range seed.Roles {
+		if err := md.RoleR.Store(context.Background(), &seed.Roles[i]); err != nil {
+			return errors.ErrInternalServerError.Wrap(err)
 		}
 	}
 
-	for j := range data.Users {
-		err = userRepo.Store(context.Background(), &data.Users[j])
-		if err != nil {
-			return errors.Wrap(err)
+	for j := range seed.Users {
+		if err := md.UserR.Store(context.Background(), &seed.Users[j]); err != nil {
+			return errors.ErrInternalServerError.Wrap(err)
 		}
 	}
 

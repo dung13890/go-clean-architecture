@@ -8,19 +8,17 @@ import (
 	"go-app/internal/modules/auth/usecase"
 	"go-app/pkg/utils"
 	"testing"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	errUc             = errors.New("Have an error")
-	errInvalidatePass = errors.New("invalidate Password")
+	errAuthUc             = errors.New("Have an error")
+	errAuthInvalidatePass = errors.New("invalidate Password")
 )
 
-type test struct {
+type authTestcase struct {
 	name string
 	mock func(*mockDomain.MockUserRepository)
 	res  interface{}
@@ -33,10 +31,13 @@ func TestRegisterAuth(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	jwtSvc := mockDomain.NewMockJWTService(ctrl)
+	thSvc := mockDomain.NewMockThrottleService(ctrl)
 	repo := mockDomain.NewMockUserRepository(ctrl)
-	uc := usecase.NewUsecase(repo)
+	pwRepo := mockDomain.NewMockPasswordResetRepository(ctrl)
+	uc := usecase.NewAuthUsecase(jwtSvc, thSvc, repo, pwRepo)
 
-	tests := []test{
+	tests := []authTestcase{
 		{
 			name: "OK",
 			mock: func(repo *mockDomain.MockUserRepository) {
@@ -49,11 +50,11 @@ func TestRegisterAuth(t *testing.T) {
 		{
 			name: "Not Good",
 			mock: func(repo *mockDomain.MockUserRepository) {
-				repo.EXPECT().Store(context.Background(), &domain.User{Name: "1"}).Return(errUc)
+				repo.EXPECT().Store(context.Background(), &domain.User{Name: "1"}).Return(errAuthUc)
 			},
 			args: &domain.User{Name: "1"},
 			res:  (*domain.User)(nil),
-			err:  errUc,
+			err:  errAuthUc,
 		},
 	}
 
@@ -75,53 +76,56 @@ func TestLoginAuth(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	jwtSvc := mockDomain.NewMockJWTService(ctrl)
+	thSvc := mockDomain.NewMockThrottleService(ctrl)
 	repo := mockDomain.NewMockUserRepository(ctrl)
-	uc := usecase.NewUsecase(repo)
-	now := time.Now()
+	pwRepo := mockDomain.NewMockPasswordResetRepository(ctrl)
+	uc := usecase.NewAuthUsecase(jwtSvc, thSvc, repo, pwRepo)
 
-	tests := []test{
+	tests := []authTestcase{
 		{
 			name: "OK",
 			mock: func(repo *mockDomain.MockUserRepository) {
 				passHash, _ := utils.GeneratePassword("")
+				jwtSvc.EXPECT().GenerateToken(context.Background(), gomock.Any()).Return("hash_token1", int64(0), nil)
+				thSvc.EXPECT().Blocked(context.Background(), "email@email.com", "ip").Return(false, nil)
+				thSvc.EXPECT().Clear(context.Background(), "email@email.com", "ip").Return(nil)
 				repo.
 					EXPECT().
 					FindByQuery(context.Background(), domain.User{Email: "email@email.com"}).
-					Return(&domain.User{Password: passHash}, nil)
+					Return(&domain.User{Email: "email@email.com", Password: passHash}, nil)
 			},
 			args: &domain.User{Email: "email@email.com"},
-			res: &domain.Claims{
-				RegisteredClaims: jwt.RegisteredClaims{
-					IssuedAt:  jwt.NewNumericDate(now),
-					ExpiresAt: jwt.NewNumericDate(now),
-				},
-			},
-			err: nil,
+			res:  "hash_token1",
+			err:  nil,
 		},
 		{
 			name: "FindByQuery NG",
 			mock: func(repo *mockDomain.MockUserRepository) {
+				thSvc.EXPECT().Blocked(context.Background(), "email1@email.com", "ip").Return(false, nil)
 				repo.
 					EXPECT().
 					FindByQuery(context.Background(), domain.User{Email: "email1@email.com"}).
-					Return(nil, errUc)
+					Return(nil, errAuthUc)
 			},
 			args: &domain.User{Email: "email1@email.com"},
-			res:  (*domain.Claims)(nil),
-			err:  errUc,
+			res:  "",
+			err:  errAuthUc,
 		},
 		{
 			name: "ComparePassword NG",
 			mock: func(repo *mockDomain.MockUserRepository) {
 				passHash, _ := utils.GeneratePassword("wrong!")
+				thSvc.EXPECT().Blocked(context.Background(), "email2@email.com", "ip").Return(false, nil)
+				thSvc.EXPECT().Incr(context.Background(), "email2@email.com", "ip").Return(nil)
 				repo.
 					EXPECT().
 					FindByQuery(context.Background(), domain.User{Email: "email2@email.com"}).
 					Return(&domain.User{Password: passHash}, nil)
 			},
 			args: &domain.User{Email: "email2@email.com"},
-			res:  (*domain.Claims)(nil),
-			err:  errInvalidatePass,
+			res:  "",
+			err:  errAuthInvalidatePass,
 		},
 	}
 
@@ -131,12 +135,9 @@ func TestLoginAuth(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock(repo)
 			args, _ := tc.args.(*domain.User)
-			res, _, err := uc.Login(context.Background(), args)
-			if res != nil {
-				res.RegisteredClaims.IssuedAt = jwt.NewNumericDate(now)
-				res.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(now)
-			}
-			assert.Equal(t, res, tc.res)
+			token, exp, err := uc.Login(context.Background(), args, "ip")
+			assert.Equal(t, token, tc.res)
+			assert.Equal(t, exp, int64(0))
 			if tc.err != nil {
 				assert.Errorf(t, err, tc.err.Error())
 			}
