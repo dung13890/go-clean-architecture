@@ -1,10 +1,17 @@
 package config
 
 import (
+	"sync"
+
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
 
 	"github.com/spf13/viper"
+)
+
+var (
+	once    sync.Once
+	appConf AppConfig
 )
 
 // AppConfig App Common
@@ -29,10 +36,11 @@ func LoadConfig() error {
 
 // GetAppConfig Unmarshal App Config from env
 func GetAppConfig() AppConfig {
-	c := AppConfig{}
-	if err := viper.Unmarshal(&c); err != nil {
-		logger.Error().Fatal(err)
-	}
+	once.Do(func() {
+		if err := viper.Unmarshal(&appConf); err != nil {
+			logger.Error().Fatal(err)
+		}
+	})
 
-	return c
+	return appConf
 }

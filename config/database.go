@@ -1,9 +1,16 @@
 package config
 
 import (
+	"sync"
+
 	"go-app/pkg/logger"
 
 	"github.com/spf13/viper"
+)
+
+var (
+	onceDB sync.Once
+	dbConf Database
 )
 
 // Database config struct
@@ -20,10 +27,11 @@ type Database struct {
 
 // GetDBConfig Unmarshal Database Config from env
 func GetDBConfig() Database {
-	c := Database{}
-	if err := viper.Unmarshal(&c); err != nil {
-		logger.Error().Fatal(err)
-	}
+	onceDB.Do(func() {
+		if err := viper.Unmarshal(&dbConf); err != nil {
+			logger.Error().Fatal(err)
+		}
+	})
 
-	return c
+	return dbConf
 }

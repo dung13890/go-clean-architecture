@@ -1,9 +1,16 @@
 package config
 
 import (
+	"sync"
+
 	"go-app/pkg/logger"
 
 	"github.com/spf13/viper"
+)
+
+var (
+	onceRedis sync.Once
+	redisConf Redis
 )
 
 // Redis config struct
@@ -15,10 +22,11 @@ type Redis struct {
 
 // GetRedisConfig Unmarshal Redis Config from env
 func GetRedisConfig() Redis {
-	c := Redis{}
-	if err := viper.Unmarshal(&c); err != nil {
-		logger.Error().Fatal(err)
-	}
+	onceRedis.Do(func() {
+		if err := viper.Unmarshal(&redisConf); err != nil {
+			logger.Error().Fatal(err)
+		}
+	})
 
-	return c
+	return redisConf
 }

@@ -18,8 +18,8 @@ services:
       - db
       - redis
     volumes:
-      - ./:/var/www/app
-    working_dir: /var/www/app
+      - ./:/go/src/go-app
+    working_dir: /go/src/go-app
     #command: air -c cmd/app/.air.toml
     ports:
       - 8080:8080
