@@ -21,10 +21,10 @@ More at [https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture
 - [Quick start](#quick-start)
 - [Project structure](#project-structure)
 - [Tools Used](#tools-used)
-- [Tools Generate](#tool-generate)
+- [Tool Generate](#tool-generate)
 
 ## Quick start
-Below are some modules included in this project:
+Below are some feature included in this project:
 - auth (JWT / API)
 - users (Create / List / Show / Update / Delete)
 - roles (Create / List / Show / Update / Delete)
@@ -106,7 +106,7 @@ USAGE:
    go-base-gen [global options] command [command options] [arguments...]
 
 VERSION:
-   v1.0.0
+   v1.0.8
 
 COMMANDS:
    project  Generate base code for go project use clean architecture
@@ -151,10 +151,10 @@ flowchart LR
 ```
 
 
-For Internal application use 4 domain layers:
+For Internal application use 4 layers:
 
-### `Entities`:
-Entities of business logic (models) can be used in any layer.
+### `Entities | domain`:
+Entities / domain is the most inner layer of the onion architecture. It is a struct for data that will be used by communication between layers.
 
 Entities are simple data structures:
 ```go
@@ -178,7 +178,8 @@ type RoleRepository interface {
 ```
 
 ### `Usecase`:
-This layer contains application specific business rules. This a layer decide repository will use
+This layer contains application specific business rules. This a layer decide repository, service, other use in application.
+
 ```go
 // RoleUsecase represent the role's repository contract
 type RoleUsecase interface {

@@ -1,9 +1,16 @@
 package config
 
 import (
+	"sync"
+
 	"go-app/pkg/logger"
 
 	"github.com/spf13/viper"
+)
+
+var (
+	onceEmail sync.Once
+	mailConf  Email
 )
 
 // Email config struct
@@ -17,10 +24,11 @@ type Email struct {
 
 // GetEmailConfig Unmarshal Email Config from env
 func GetEmailConfig() Email {
-	c := Email{}
-	if err := viper.Unmarshal(&c); err != nil {
-		logger.Error().Fatal(err)
-	}
+	onceEmail.Do(func() {
+		if err := viper.Unmarshal(&mailConf); err != nil {
+			logger.Error().Fatal(err)
+		}
+	})
 
-	return c
+	return mailConf
 }

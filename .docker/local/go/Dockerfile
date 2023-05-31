@@ -5,7 +5,7 @@ FROM golang:1.20.3-alpine3.16 as base
 RUN apk update && apk upgrade && \
     apk add --no-cache gcc musl-dev make git bash openssh
 
-WORKDIR /var/www/app
+WORKDIR /go/src/app
 
 COPY go.mod go.sum ./
 RUN go mod download
