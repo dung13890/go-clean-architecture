@@ -13,6 +13,13 @@ type RoleRepository struct {
 	*gorm.DB
 }
 
+// NewRoleRepository will implement of domain.RoleRepository interface
+func NewRoleRepository(db *gorm.DB) *RoleRepository {
+	return &RoleRepository{
+		DB: db,
+	}
+}
+
 // Fetch will fetch content from db
 func (rp *RoleRepository) Fetch(ctx context.Context) ([]domain.Role, error) {
 	dao := []Role{}

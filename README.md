@@ -106,7 +106,7 @@ USAGE:
    go-base-gen [global options] command [command options] [arguments...]
 
 VERSION:
-   v1.0.8
+   v1.0.10
 
 COMMANDS:
    project  Generate base code for go project use clean architecture

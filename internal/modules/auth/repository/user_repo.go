@@ -13,6 +13,13 @@ type UserRepository struct {
 	*gorm.DB
 }
 
+// NewUserRepository will implement of domain.UserRepository interface
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{
+		DB: db,
+	}
+}
+
 // Fetch will fetch content from db
 func (rp *UserRepository) Fetch(ctx context.Context) ([]domain.User, error) {
 	dao := []User{}

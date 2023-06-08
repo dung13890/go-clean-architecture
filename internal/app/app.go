@@ -6,9 +6,9 @@ import (
 	"go-app/internal/constants"
 	"go-app/internal/registry"
 	"go-app/pkg/cache"
+	"go-app/pkg/database"
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
-	"go-app/pkg/postgres"
 	"go-app/pkg/redis"
 	"net/http"
 	"os"
@@ -25,7 +25,7 @@ func Run(conf config.AppConfig) error {
 	var db *gorm.DB
 	var err error
 	for {
-		db, err = postgres.NewGormDB(dbConf)
+		db, err = database.NewGormDB(dbConf)
 		if err != nil {
 			logger.Info().Printf("Wait for starting db: %v", err)
 			time.Sleep(constants.ConnectWaitDuration)
