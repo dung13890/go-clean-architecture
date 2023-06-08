@@ -2,14 +2,14 @@ package app
 
 import (
 	"context"
+
 	"go-app/config"
 	"go-app/internal/domain"
+	authModule "go-app/internal/modules/auth/repository"
+	"go-app/pkg/database"
 	"go-app/pkg/errors"
-	"go-app/pkg/postgres"
 
 	"github.com/spf13/viper"
-
-	authModule "go-app/internal/modules/auth/repository"
 )
 
 var pathJSON = "db/seeds/data.json"
@@ -21,12 +21,16 @@ type seedData struct {
 
 // Seed is function that seed data
 func Seed(dbConfig config.Database) error {
-	db, err := postgres.NewGormDB(dbConfig)
+	db, err := database.NewGormDB(dbConfig)
 	if err != nil {
 		return errors.ErrInternalServerError.Wrap(err)
 	}
 
-	authModule := authModule.NewRepository(db)
+	authMD := &authModule.Repository{
+		RoleR:     authModule.NewRoleRepository(db),
+		UserR:     authModule.NewUserRepository(db),
+		PasswordR: authModule.NewPasswordResetRepository(db),
+	}
 
 	viper.SetConfigFile(pathJSON)
 	if err = viper.ReadInConfig(); err != nil {
@@ -38,7 +42,7 @@ func Seed(dbConfig config.Database) error {
 		return errors.ErrInternalServerError.Wrap(err)
 	}
 
-	if err := data.seedAuth(authModule); err != nil {
+	if err := data.seedAuth(authMD); err != nil {
 		return errors.Throw(err)
 	}
 

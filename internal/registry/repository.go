@@ -14,6 +14,10 @@ type Repository struct {
 // NewRepository implements from interface for modules
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		AuthModule: authRepo.NewRepository(db),
+		AuthModule: &authRepo.Repository{
+			RoleR:     authRepo.NewRoleRepository(db),
+			UserR:     authRepo.NewUserRepository(db),
+			PasswordR: authRepo.NewPasswordResetRepository(db),
+		},
 	}
 }

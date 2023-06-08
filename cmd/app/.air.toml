@@ -1,4 +1,4 @@
-root = "/var/www/app"
+root = "/go/src/go-app"
 tmp_dir = "./tmp"
 
 [build]

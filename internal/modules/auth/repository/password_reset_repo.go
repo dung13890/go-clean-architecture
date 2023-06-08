@@ -15,6 +15,13 @@ type PasswordResetRepository struct {
 	*gorm.DB
 }
 
+// NewPasswordResetRepository will implement of domain.PasswordResetRepository interface
+func NewPasswordResetRepository(db *gorm.DB) *PasswordResetRepository {
+	return &PasswordResetRepository{
+		DB: db,
+	}
+}
+
 // StoreOrUpdate will store or update password reset by email
 func (rp *PasswordResetRepository) StoreOrUpdate(ctx context.Context, email, token string) error {
 	dao := &PasswordReset{

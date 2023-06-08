@@ -12,10 +12,19 @@ type Usecase struct {
 // NewUsecase implements from interface for modules
 func NewUsecase(repo *Repository, svc *Service) *Usecase {
 	return &Usecase{
-		AuthModule: authUC.NewUsecase(
-			repo.AuthModule,
-			svc.JWTSvc,
-			svc.ThrottleSvc,
-		),
+		AuthModule: &authUC.Usecase{
+			RoleUC: authUC.NewRoleUsecase(
+				repo.AuthModule.RoleR,
+			),
+			UserUC: authUC.NewUserUsecase(
+				repo.AuthModule.UserR,
+			),
+			AuthUC: authUC.NewAuthUsecase(
+				svc.JWTSvc,
+				svc.ThrottleSvc,
+				repo.AuthModule.UserR,
+				repo.AuthModule.PasswordR,
+			),
+		},
 	}
 }

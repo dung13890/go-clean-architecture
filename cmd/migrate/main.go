@@ -2,8 +2,8 @@ package main
 
 import (
 	"go-app/config"
+	"go-app/pkg/database"
 	"go-app/pkg/logger"
-	"go-app/pkg/postgres"
 	"time"
 )
 
@@ -24,7 +24,7 @@ func main() {
 
 	db := config.GetDBConfig()
 
-	if err := postgres.Migrate(db); err != nil {
+	if err := database.Migrate(db); err != nil {
 		logger.Error().Fatal(err)
 	}
 }
