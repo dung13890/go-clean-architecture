@@ -1,0 +1,56 @@
+volumes:
+  redis_volume:
+  go_volume:
+  postgres_volume:
+services:
+  go-app:
+    platform: linux/amd64
+    build:
+      context: ./
+      dockerfile: ./.docker/local/go/Dockerfile
+    image: go-app:1.25-alpine
+    networks:
+      - go-app-net
+    stdin_open: true
+    tty: true
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./:/go/src/go-app
+    working_dir: /go/src/go-app
+    #command: air -c cmd/app/.air.toml
+    ports:
+      - 8080:8080
+  db:
+    platform: linux/amd64
+    image: postgres:16
+    restart: on-failure
+    networks:
+      - go-app-net
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+  redis:
+    platform: linux/amd64
+    restart: always
+    image: redis:latest
+    expose:
+      - "6379"
+    networks:
+      - go-app-net
+    volumes:
+      - redis_volume:/data
+networks:
+  go-app-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.168.1.0/24
+          gateway: 172.168.1.1

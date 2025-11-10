@@ -1,34 +1,70 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
 
 var (
-	info  *log.Logger
-	debug *log.Logger
-	err   *log.Logger
+	infoLog  *log.Logger
+	debugLog *log.Logger
+	errorLog *log.Logger
+	traceLog *log.Logger
 )
 
-// InitLogger init
-func InitLogger() {
-	info = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Llongfile)
-	debug = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Llongfile)
-	err = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Llongfile)
+// Init initializes the loggers (call this in main)
+func Init() {
+	infoLog = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
+	debugLog = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime)
+	errorLog = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	traceLog = log.New(os.Stdout, "TRACE: ", log.Ldate|log.Ltime|log.Llongfile)
 }
 
-// Info Log
-func Info(_ ...any) *log.Logger {
-	return info
+// Info logs an informational message
+func Info(args ...interface{}) {
+	infoLog.Println(args...)
 }
 
-// Debug Log
-func Debug(_ ...any) *log.Logger {
-	return debug
+// Debug logs a debug message
+func Debug(args ...interface{}) {
+	debugLog.Println(args...)
 }
 
-// Error Log
-func Error(_ ...any) *log.Logger {
-	return err
+// Error logs an error message with file:line
+func Error(args ...interface{}) {
+	if err := errorLog.Output(2, fmt.Sprint(args...)); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to write error log: %v\n", err)
+	}
+}
+
+// Trace logs a trace message with full file path
+func Trace(args ...interface{}) {
+	if err := traceLog.Output(2, fmt.Sprint(args...)); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to write trace log: %v\n", err)
+	}
+}
+
+// Infof logs a formatted informational message
+func Infof(format string, args ...interface{}) {
+	infoLog.Printf(format, args...)
+}
+
+// Debugf logs a formatted debug message
+func Debugf(format string, args ...interface{}) {
+	debugLog.Printf(format, args...)
+}
+
+// Errorf logs a formatted error message with file:line
+func Errorf(format string, args ...interface{}) {
+	if err := errorLog.Output(2, fmt.Sprintf(format, args...)); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to write error log: %v\n", err)
+	}
+}
+
+// Tracef logs a formatted trace message with full file path
+func Tracef(format string, args ...interface{}) {
+	if err := traceLog.Output(2, fmt.Sprintf(format, args...)); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to write trace log: %v\n", err)
+	}
 }

@@ -4,17 +4,32 @@
 *.dll
 *.so
 *.dylib
-*.env
-*.idea
-*.DS_Store
+bin/
+dist/
 
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Output of the go coverage tool
 *.out
-vendor/
-*tmp/
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Dependency directories
+vendor/
+data/
+
+# Go workspace file
+go.work
+
+# Environment files
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
