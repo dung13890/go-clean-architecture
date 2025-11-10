@@ -7,7 +7,7 @@ import (
 	"go-app/internal/delivery/http/mapper"
 	"go-app/internal/domain/entity"
 	"go-app/internal/infrastructure/constant"
-	"go-app/internal/usecase"
+	"go-app/internal/usecase/auth"
 	"go-app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
@@ -15,11 +15,11 @@ import (
 
 // authHandler represent the httphandler
 type authHandler struct {
-	usecase *usecase.AuthUsecase
+	usecase *auth.Usecase
 }
 
 // NewAuthHandler will create new an authHandler object
-func NewAuthHandler(usecase *usecase.AuthUsecase) *authHandler {
+func NewAuthHandler(usecase *auth.Usecase) *authHandler {
 	return &authHandler{
 		usecase: usecase,
 	}

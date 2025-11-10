@@ -14,4 +14,3 @@ RUN go mod download
 RUN go install github.com/cosmtrek/air@latest
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.6
 RUN go install github.com/golang/mock/mockgen@v1.6.0
-RUN go install github.com/dung13890/go-base-gen@latest

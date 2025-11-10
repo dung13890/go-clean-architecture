@@ -26,7 +26,6 @@ git submodule update --init --force --remote
 
 ```bash
 docker compose build
-go mod tidy
 cp .env.example .env
 docker compose up -d
 ```
@@ -34,7 +33,7 @@ docker compose up -d
 ### 3. Inside Docker
 
 ```bash
-docker compose exec go-app bash
+docker compose exec go-app sh
 ```
 
 ### 4. Database Migration & Seed

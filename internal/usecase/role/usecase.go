@@ -1,4 +1,4 @@
-package usecase
+package role
 
 import (
 	"context"
@@ -8,20 +8,20 @@ import (
 	"go-app/pkg/errors"
 )
 
-// RoleUsecase ...
-type RoleUsecase struct {
+// Usecase ...
+type Usecase struct {
 	repo repository.RoleRepository
 }
 
-// NewRoleUsecase will create new an roleUsecase object representation of entity.RoleUsecase interface
-func NewRoleUsecase(repo repository.RoleRepository) *RoleUsecase {
-	return &RoleUsecase{
+// NewUsecase will create new an Usecase object representation of entity.Usecase interface
+func NewUsecase(repo repository.RoleRepository) *Usecase {
+	return &Usecase{
 		repo: repo,
 	}
 }
 
 // Fetch will fetch content from repo
-func (uc *RoleUsecase) Fetch(c context.Context) ([]entity.Role, error) {
+func (uc *Usecase) Fetch(c context.Context) ([]entity.Role, error) {
 	items, err := uc.repo.Fetch(c)
 	if err != nil {
 		return nil, errors.Throw(err)
@@ -31,7 +31,7 @@ func (uc *RoleUsecase) Fetch(c context.Context) ([]entity.Role, error) {
 }
 
 // Find will find content from repo
-func (uc *RoleUsecase) Find(c context.Context, id uint) (*entity.Role, error) {
+func (uc *Usecase) Find(c context.Context, id uint) (*entity.Role, error) {
 	item, err := uc.repo.Find(c, id)
 	if err != nil {
 		return nil, errors.Throw(err)
@@ -41,7 +41,7 @@ func (uc *RoleUsecase) Find(c context.Context, id uint) (*entity.Role, error) {
 }
 
 // Store will create content from repo
-func (uc *RoleUsecase) Store(c context.Context, role *entity.Role) error {
+func (uc *Usecase) Store(c context.Context, role *entity.Role) error {
 	if err := uc.repo.Store(c, role); err != nil {
 		return errors.Throw(err)
 	}
@@ -50,7 +50,7 @@ func (uc *RoleUsecase) Store(c context.Context, role *entity.Role) error {
 }
 
 // Update will update content from repo
-func (uc *RoleUsecase) Update(ctx context.Context, id uint, r *entity.Role) error {
+func (uc *Usecase) Update(ctx context.Context, id uint, r *entity.Role) error {
 	// Check exist by name
 	exists, err := uc.repo.CheckExists(ctx, *r, &id)
 	if err != nil {
@@ -69,7 +69,7 @@ func (uc *RoleUsecase) Update(ctx context.Context, id uint, r *entity.Role) erro
 }
 
 // Delete will delete content from repo
-func (uc *RoleUsecase) Delete(c context.Context, id uint) error {
+func (uc *Usecase) Delete(c context.Context, id uint) error {
 	if err := uc.repo.Delete(c, id); err != nil {
 		return errors.Throw(err)
 	}

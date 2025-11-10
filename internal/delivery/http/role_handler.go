@@ -6,7 +6,7 @@ import (
 
 	"go-app/internal/delivery/http/dto"
 	"go-app/internal/delivery/http/mapper"
-	"go-app/internal/usecase"
+	"go-app/internal/usecase/role"
 	"go-app/pkg/errors"
 
 	"github.com/labstack/echo/v4"
@@ -14,11 +14,11 @@ import (
 
 // roleHandler represent the http handler
 type roleHandler struct {
-	usecase *usecase.RoleUsecase
+	usecase *role.Usecase
 }
 
 // NewRoleHandler will create new an roleHandler object
-func NewRoleHandler(usecase *usecase.RoleUsecase) *roleHandler {
+func NewRoleHandler(usecase *role.Usecase) *roleHandler {
 	return &roleHandler{
 		usecase: usecase,
 	}

@@ -5,7 +5,10 @@ volumes:
 services:
   go-app:
     platform: linux/amd64
-    image: golang:1.25-alpine
+    build:
+      context: ./
+      dockerfile: ./.docker/local/go/Dockerfile
+    image: go-app:1.25-alpine
     networks:
       - go-app-net
     stdin_open: true
@@ -20,6 +23,7 @@ services:
     ports:
       - 8080:8080
   db:
+    platform: linux/amd64
     image: postgres:16
     restart: on-failure
     networks:
@@ -34,6 +38,7 @@ services:
     volumes:
       - postgres_volume:/var/lib/postgresql/data
   redis:
+    platform: linux/amd64
     restart: always
     image: redis:latest
     expose:

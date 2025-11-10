@@ -1,4 +1,4 @@
-package usecase
+package user
 
 import (
 	"context"
@@ -8,20 +8,20 @@ import (
 	"go-app/pkg/errors"
 )
 
-// UserUsecase ...
-type UserUsecase struct {
+// Usecase ...
+type Usecase struct {
 	repo repository.UserRepository
 }
 
-// NewUserUsecase will create new an userUsecase object representation of entity.UserUsecase interface
-func NewUserUsecase(repo repository.UserRepository) *UserUsecase {
-	return &UserUsecase{
+// NewUsecase will create new an Usecase object representation of entity.Usecase interface
+func NewUsecase(repo repository.UserRepository) *Usecase {
+	return &Usecase{
 		repo: repo,
 	}
 }
 
 // Fetch will fetch content from repo
-func (uc *UserUsecase) Fetch(c context.Context) ([]entity.User, error) {
+func (uc *Usecase) Fetch(c context.Context) ([]entity.User, error) {
 	items, err := uc.repo.Fetch(c)
 	if err != nil {
 		return nil, errors.Throw(err)
@@ -31,7 +31,7 @@ func (uc *UserUsecase) Fetch(c context.Context) ([]entity.User, error) {
 }
 
 // Find will find content from repo
-func (uc *UserUsecase) Find(c context.Context, id uint) (*entity.User, error) {
+func (uc *Usecase) Find(c context.Context, id uint) (*entity.User, error) {
 	item, err := uc.repo.Find(c, id)
 	if err != nil {
 		return nil, errors.Throw(err)
@@ -41,7 +41,7 @@ func (uc *UserUsecase) Find(c context.Context, id uint) (*entity.User, error) {
 }
 
 // Store will create content from repo
-func (uc *UserUsecase) Store(c context.Context, user *entity.User) error {
+func (uc *Usecase) Store(c context.Context, user *entity.User) error {
 	if err := uc.repo.Store(c, user); err != nil {
 		return errors.Throw(err)
 	}
@@ -50,7 +50,7 @@ func (uc *UserUsecase) Store(c context.Context, user *entity.User) error {
 }
 
 // FindByQuery is a function that returns a user filtered by query
-func (uc *UserUsecase) FindByQuery(ctx context.Context, q entity.User) (*entity.User, error) {
+func (uc *Usecase) FindByQuery(ctx context.Context, q entity.User) (*entity.User, error) {
 	item, err := uc.repo.FindByQuery(ctx, q)
 	if err != nil {
 		return nil, errors.Throw(err)
@@ -60,7 +60,7 @@ func (uc *UserUsecase) FindByQuery(ctx context.Context, q entity.User) (*entity.
 }
 
 // Update will update content from repo
-func (uc *UserUsecase) Update(ctx context.Context, id uint, u *entity.User) error {
+func (uc *Usecase) Update(ctx context.Context, id uint, u *entity.User) error {
 	// Check exist by email
 	userByEmail := entity.User{Email: u.Email}
 	exists, err := uc.repo.CheckExists(ctx, userByEmail, &id)
@@ -79,7 +79,7 @@ func (uc *UserUsecase) Update(ctx context.Context, id uint, u *entity.User) erro
 }
 
 // Delete will delete content from repo
-func (uc *UserUsecase) Delete(c context.Context, id uint) error {
+func (uc *Usecase) Delete(c context.Context, id uint) error {
 	if err := uc.repo.Delete(c, id); err != nil {
 		return errors.Throw(err)
 	}

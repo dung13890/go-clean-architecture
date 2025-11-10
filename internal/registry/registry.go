@@ -6,7 +6,9 @@ import (
 	"go-app/internal/adapter/repository"
 	dmSvc "go-app/internal/domain/service"
 	"go-app/internal/service"
-	"go-app/internal/usecase"
+	"go-app/internal/usecase/auth"
+	"go-app/internal/usecase/role"
+	"go-app/internal/usecase/user"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -14,9 +16,9 @@ import (
 
 // Registry struct
 type Registry struct {
-	AuthUc *usecase.AuthUsecase
-	UserUc *usecase.UserUsecase
-	RoleUc *usecase.RoleUsecase
+	AuthUc *auth.Usecase
+	UserUc *user.Usecase
+	RoleUc *role.Usecase
 	JWTSvc dmSvc.JWTService
 }
 
@@ -34,9 +36,9 @@ func NewRegistry(db *gorm.DB, rdb *redis.Client) *Registry {
 	throttleSvc := service.NewThrottleService(cm)
 
 	return &Registry{
-		AuthUc: usecase.NewAuthUsecase(jwtSvc, throttleSvc, mailSvc, userRepo, passwordResetRepo),
-		UserUc: usecase.NewUserUsecase(userRepo),
-		RoleUc: usecase.NewRoleUsecase(roleRepo),
+		AuthUc: auth.NewUsecase(jwtSvc, throttleSvc, mailSvc, userRepo, passwordResetRepo),
+		UserUc: user.NewUsecase(userRepo),
+		RoleUc: role.NewUsecase(roleRepo),
 		JWTSvc: jwtSvc,
 	}
 }
