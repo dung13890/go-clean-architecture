@@ -10,9 +10,8 @@ import (
 	"go-app/internal/infrastructure/config"
 	"go-app/internal/infrastructure/constant"
 	"go-app/pkg/errors"
-	"go-app/pkg/utils"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // jWTService is a struct that represent the jwt's service
@@ -44,9 +43,7 @@ func (*jWTService) GenerateToken(_ context.Context, user *entity.User) (string, 
 		Email:  user.Email,
 		RoleID: user.RoleID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: exp,
-			ID:        utils.GenerateUUID(),
 		},
 	}
 
