@@ -1,15 +1,11 @@
-version: '3.8'
 volumes:
   redis_volume:
   go_volume:
   postgres_volume:
 services:
   go-app:
-    build:
-      context: ./
-      dockerfile: ./.docker/local/go/Dockerfile
     platform: linux/amd64
-    image: go-app:1.20
+    image: golang:1.25-alpine
     networks:
       - go-app-net
     stdin_open: true
@@ -24,7 +20,7 @@ services:
     ports:
       - 8080:8080
   db:
-    image: postgres:13.4
+    image: postgres:16
     restart: on-failure
     networks:
       - go-app-net

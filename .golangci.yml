@@ -1,0 +1,118 @@
+version: "2"
+run:
+  go: "1.25"
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - cyclop
+    - durationcheck
+    - err113
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    # - forbidigo
+    - funlen
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - govet
+    - ineffassign
+    - lll
+    - loggercheck
+    - makezero
+    # - mnd
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - predeclared
+    - promlinter
+    - reassign
+    # - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - testableexamples
+    - testpackage
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+  settings:
+    cyclop:
+      max-complexity: 20
+    funlen:
+      lines: 270
+      statements: 50
+    gocognit:
+      min-complexity: 35
+    govet:
+      disable:
+        - fieldalignment
+        - shadow
+      enable-all: true
+    misspell:
+      locale: US
+    revive:
+      severity: error
+      rules:
+        - name: exported
+        - name: unused-parameter
+        - name: unused-receiver
+        - name: waitgroup-by-value
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - bodyclose
+          - dupl
+          - errcheck
+          - funlen
+          - gochecknoinits
+          - gocognit
+          - goconst
+          - gosec
+          - noctx
+          - revive
+          - scopelint
+          - tparallel
+          - wrapcheck
+        path: _test\.go
+    paths:
+      - .docker
+      - .github
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - .docker
+      - .github
+      - third_party$
+      - builtin$
+      - examples$

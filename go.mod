@@ -1,21 +1,18 @@
 module go-app
 
-go 1.20
+go 1.25
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo-jwt/v4 v4.1.0
 	github.com/labstack/echo/v4 v4.9.0
 	github.com/redis/go-redis/v9 v9.0.4
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.4.0
 	golang.org/x/text v0.5.0
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df
@@ -25,7 +22,6 @@ require (
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
@@ -51,7 +47,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

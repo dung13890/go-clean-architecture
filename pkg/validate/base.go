@@ -111,8 +111,7 @@ func (v *CustomValidate) Validate(u interface{}) error {
 		}
 
 		errStr := strings.Join(errArr, ";")
-		//nolint:goerr113
-		return errors.New(errStr)
+		return errors.New(errStr) //nolint:err113
 	}
 
 	return nil

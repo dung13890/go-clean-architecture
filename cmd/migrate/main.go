@@ -1,16 +1,16 @@
 package main
 
 import (
-	"go-app/config"
-	"go-app/pkg/database"
+	"go-app/internal/infrastructure/config"
+	"go-app/internal/infrastructure/database"
 	"go-app/pkg/logger"
 	"time"
 )
 
 func main() {
-	logger.InitLogger()
+	logger.Init()
 	if err := config.LoadConfig(); err != nil {
-		logger.Error().Fatal(err)
+		logger.Error(err)
 	}
 
 	conf := config.GetAppConfig()
@@ -18,13 +18,13 @@ func main() {
 	// Set timezone
 	loc, err := time.LoadLocation(conf.AppTimeZone)
 	if err != nil {
-		logger.Error().Fatal(err)
+		logger.Error(err)
 	}
 	time.Local = loc
 
 	db := config.GetDBConfig()
 
 	if err := database.Migrate(db); err != nil {
-		logger.Error().Fatal(err)
+		logger.Error(err)
 	}
 }
