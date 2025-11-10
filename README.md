@@ -2,29 +2,15 @@
 ![workflow status](https://github.com/dung13890/go-clean-architecture/actions/workflows/go-ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A modular, scalable, and testable **Golang codebase** built using **Clean Architecture** principles.
+A modular, scalable Golang codebase built with Clean Architecture principles.
 
-> Current Go version: **v1.25**
+**Go version:** v1.25
 
-## 🧩 Overview
+## Overview
 
-This project demonstrates a clean and maintainable architecture for Go applications:
+This project demonstrates clean architecture for Go applications with separation of concerns across distinct layers. Independent of frameworks, fully testable, and easy to extend.
 
-* Independent of frameworks and external layers
-* Fully testable
-* Database and UI agnostic
-* Easy to extend with new modules
-
-📖 Learn more about the Clean Architecture:
-[Uncle Bob’s Blog – The Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-
-## Content
-- [Quick start](#quick-start)
-- [Project structure](#project-structure)
-- [Feature](#features)
-- [Tools & Dependencies](#tools--dependencies)
-
----
+📖 [Learn more about Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 ## 🚀 Quick Start
 
@@ -74,8 +60,6 @@ make go-gen   # Generate mocks or base files
 make test     # Run unit tests
 ```
 
----
-
 ## 🌐 API Test Example
 
 ```bash
@@ -98,34 +82,42 @@ curl -X POST 'localhost:8080/api/login' \
 }'
 ```
 
----
-
 ## 🧱 Project Structure
 
 ```plaintext
-Handler
-   ↓
-UseCase ──────→ Domain Interface (Service, Repository)
-   ↑                    ↑
-   │provider            │ implements
-   │                    │
-Registry ──→ Factory ───┴─→ Adapters (Cache, External Service, Database)
-   ↑
-   │
- Config
+Handler → UseCase → Domain Interface (Service, Repository)
+                           ↑
+                           └─ Adapters (Cache, DB, External)
 
+```
+
+```plaintext
+internal/
+├── domain/              # Core entities and interfaces
+│   ├── entity/
+│   ├── repository/
+│   └── service/
+├── usecase/             # Application logic
+├── service/             # Business logic implementations
+├── adapter/             # External integrations
+│   ├── repository/      # Data persistence
+│   ├── cache/           # Cache
+│   └── external/        # External services
+├── delivery/http/       # HTTP handlers
+└── infrastructure/      # Config, database, logging
 ```
 
 Go-App follows **Clean Architecture** with separation of concerns across distinct layers:
 
-### 🗂 Directory Overview
+### 🗂 Layer Responsibilities
 
 | Layer        | Path                | Description                                    |
 | ------------ | ------------------- | ---------------------------------------------- |
 | **Domain**   | `internal/domain`   | Core business entities and interfaces          |
-| **Usecase**  | `internal/usecase`  | Application logic and business rules           |
+| **Usecase**  | `internal/usecase`  | Application workflows and orchestration        |
 | **Service**  | `internal/service`  | Shared reusable services (JWT, throttle, etc.) |
-| **Adapter**  | `internal/adapter`  | External systems (DB, cache, email)            |
+| **Adapter**  | `internal/adapter`  | External integrations (DB, cache, email)       |
+| **Delivery** | `internal/delivery` | User interfaces (CLI, HTTP, Grpc future)       |
 | **Registry** | `internal/registry` | Dependency injection and initialization        |
 
 
@@ -137,18 +129,14 @@ Go-App follows **Clean Architecture** with separation of concerns across distinc
 * **Email Notifications** — SMTP email service
 * **Rate Limiting** — Request throttling with Redis
 
----
 
-## 🛠 Tools & Dependencies
+## Stack
 
-* [GORM](https://gorm.io) — ORM for database interaction
-* [Echo](https://echo.labstack.com) — HTTP web framework
-* [Viper](https://github.com/spf13/viper) — Configuration management
-* [Validator](https://github.com/go-playground/validator) — Input validation
-* [Golang/mock](https://github.com/golang/mock) — Mock generation
-* [JWT](https://golang-jwt.github.io/jwt) — Token authentication
-* [cosmtrek/air](https://github.com/cosmtrek/air) — Hot reload
-* [go-base-gen](https://github.com/dung13890/go-base-gen) — Code generation tool
+- [Echo](https://echo.labstack.com) — Web framework
+- [GORM](https://gorm.io) — ORM
+- [Viper](https://github.com/spf13/viper) — Configuration
+- [JWT](https://golang-jwt.github.io/jwt) — Authentication
+- [Air](https://github.com/cosmtrek/air) — Hot reload
 
 ---
 
@@ -157,5 +145,3 @@ Go-App follows **Clean Architecture** with separation of concerns across distinc
 If you find this project helpful:
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/dung13890)
-
----
