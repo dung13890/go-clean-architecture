@@ -1,141 +1,231 @@
 # go-clean-architecture
+
 ![workflow status](https://github.com/dung13890/go-clean-architecture/actions/workflows/go-ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A modular, scalable Golang codebase built with Clean Architecture principles.
+A modular, scalable Go codebase template built with Clean Architecture principles.
 
 **Go version:** v1.25
 
-## Overview
+## 🎯 What Is This?
 
-This project demonstrates clean architecture for Go applications with separation of concerns across distinct layers. Independent of frameworks, fully testable, and easy to extend.
+This is a **production-ready template** for building Go applications with:
+- ✅ Clean separation of concerns
+- ✅ Framework-independent business logic
+- ✅ Fully testable code
+- ✅ Easy to extend and maintain
 
 📖 [Learn more about Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
-## 🚀 Quick Start
+---
 
-### 1. Setup
+## 🚀 Two Ways to Get Started
+
+### Option 1: Use the Generator Tool (Recommended)
+
+The easiest way to create a new project based on this architecture:
 
 ```bash
+# Install the generator
+go install github.com/dung13890/go-base-gen@latest
+
+# Generate your new project
+go-base-gen project --pkg github.com/yourusername/yourproject --path yourproject
+
+# Setup and run
+cd yourproject
+go mod tidy
+cp .env.example .env
+go run cmd/migrate/main.go
+make dev
+```
+
+👉 [View go-base-gen documentation](https://github.com/dung13890/go-base-gen)
+
+### Option 2: Clone This Repository
+
+To explore or contribute to the template itself:
+
+```bash
+# Clone the repository
 git clone https://github.com/dung13890/go-clean-architecture.git
 cd go-clean-architecture
 git submodule update --init --force --remote
-```
 
-### 2. Build & Run (Local)
-
-```bash
+# Build and run with Docker
 docker compose build
 cp .env.example .env
 docker compose up -d
-```
 
-### 3. Inside Docker
-
-```bash
+# Access the container
 docker compose exec go-app sh
-```
 
-### 4. Database Migration & Seed
-
-```bash
+# Inside container: Setup database
 make create_example_table.sql
 go run cmd/migrate/main.go
-# go run cmd/migrate/main.go down {step}
 go run cmd/seed/main.go
-```
 
-### 5. Run App
-
-```bash
+# Run the application
 air -c cmd/app/.air.toml
 ```
 
-### 6. Useful Commands
+---
 
-```bash
-make lint     # Check lint
-make go-gen   # Generate mocks or base files
-make test     # Run unit tests
-```
+## 📁 Project Structure
 
-## 🌐 API Test Example
-
-```bash
-curl -X POST 'localhost:8080/api/register' \
- -H 'accept: application/json' \
- -H 'content-type: application/json' \
- -d '{
-    "email": "user@example.com",
-    "password" : "password",
-    "role_id": 1,
-    "name": "user"
-}'
-
-curl -X POST 'localhost:8080/api/login' \
- -H 'accept: application/json' \
- -H 'content-type: application/json' \
- -d '{
-    "email": "user@example.com",
-    "password" : "password"
-}'
-```
-
-## 🧱 Project Structure
+### Architecture Flow
 
 ```plaintext
 Handler → UseCase → Domain Interface (Service, Repository)
-                           ↑
-                           └─ Adapters (Cache, DB, External)
-
+    ↓                       ↑
+Validation                  └─ Adapters (Cache, DB, External)
 ```
+
+### Directory Layout
 
 ```plaintext
 internal/
-├── domain/              # Core entities and interfaces
-│   ├── entity/
-│   ├── repository/
-│   └── service/
-├── usecase/             # Application logic
-├── service/             # Business logic implementations
-├── adapter/             # External integrations
+├── domain/              # 🎯 Core Business Layer
+│   ├── entity/          # Business entities (User, Role, etc.)
+│   ├── repository/      # Repository interfaces
+│   └── service/         # Service interfaces
+│
+├── usecase/             # 📋 Application Logic
+├── service/             # 🔧 Business Logic Implementation
+├── adapter/             # 🔌 External Integrations
 │   ├── repository/      # Data persistence
 │   ├── cache/           # Cache
-│   └── external/        # External services
-├── delivery/http/       # HTTP handlers
-└── infrastructure/      # Config, database, logging
+│   └── external/        # Third-party APIs
+│
+├── delivery/            # 🌐 User Interface Layer
+│   └── http/            # HTTP handlers & routes
+├── infrastructure/      # ⚙️ Cross-cutting Concerns
+│
+└── registry/            # 🏗️ Dependency Injection
 ```
 
-Go-App follows **Clean Architecture** with separation of concerns across distinct layers:
+### Layer Responsibilities
 
-### 🗂 Layer Responsibilities
+| Layer            | Responsibility                          | Example                    |
+| ---------------- | --------------------------------------- | -------------------------- |
+| **Domain**       | Core business rules & interfaces        | User entity, UserRepo      |
+| **Usecase**      | Application workflows & orchestration   | Register user flow         |
+| **Service**      | Reusable business logic                 | JWT generation, Email send |
+| **Adapter**      | External system integration             | PostgreSQL, Redis, SMTP    |
+| **Delivery**     | Request/response handling               | HTTP handlers, CLI         |
+| **Registry**     | Wire dependencies together              | Inject repos into usecases |
+| **Infrastructure** | Technical concerns                    | Config, DB, Redis          |
 
-| Layer        | Path                | Description                                    |
-| ------------ | ------------------- | ---------------------------------------------- |
-| **Domain**   | `internal/domain`   | Core business entities and interfaces          |
-| **Usecase**  | `internal/usecase`  | Application workflows and orchestration        |
-| **Service**  | `internal/service`  | Shared reusable services (JWT, throttle, etc.) |
-| **Adapter**  | `internal/adapter`  | External integrations (DB, cache, email)       |
-| **Delivery** | `internal/delivery` | User interfaces (CLI, HTTP, Grpc future)       |
-| **Registry** | `internal/registry` | Dependency injection and initialization        |
+---
 
+## ✨ Built-in Features
 
-## ✨ Features
+- 🔐 **JWT Authentication** — Secure token-based auth
+- 👤 **User Management** — Full CRUD operations
+- 🎭 **Role & Permissions** — Access control system
+- 📧 **Email Service** — SMTP integration
+- 🚦 **Rate Limiting** — Redis-based throttling
+- 🔄 **Hot Reload** — Development with Air
+- 🧪 **Testing Ready** — Mock generation included
 
-* **Authentication** — JWT-based authentication
-* **User Management** — CRUD for users
-* **Role Management** — Manage roles & permissions
-* **Email Notifications** — SMTP email service
-* **Rate Limiting** — Request throttling with Redis
+---
 
+## 🛠️ Development Commands
 
-## Stack
+```bash
+# Code quality
+make lint              # Run linter
+make test              # Run unit tests
+make go-gen            # Generate mocks
 
-- [Echo](https://echo.labstack.com) — Web framework
-- [GORM](https://gorm.io) — ORM
-- [Viper](https://github.com/spf13/viper) — Configuration
-- [JWT](https://golang-jwt.github.io/jwt) — Authentication
-- [Air](https://github.com/cosmtrek/air) — Hot reload
+# Database
+make create_example_table.sql  # Create migration file
+go run cmd/migrate/main.go     # Run migrations
+go run cmd/migrate/main.go down 1  # Rollback 1 step
+go run cmd/seed/main.go        # Seed database
+
+# Development
+make dev               # Run with hot reload
+```
+
+---
+
+## 🧪 API Examples
+
+### Register User
+
+```bash
+curl -X POST 'http://localhost:8080/api/register' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email": "user@example.com",
+    "password": "password",
+    "role_id": 1,
+    "name": "John Doe"
+  }'
+```
+
+### Login
+
+```bash
+curl -X POST 'http://localhost:8080/api/login' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email": "user@example.com",
+    "password": "password"
+  }'
+```
+
+---
+
+## 📦 Tech Stack
+
+| Category       | Technology                                             |
+| -------------- | ------------------------------------------------------ |
+| Framework      | [Echo](https://echo.labstack.com)                      |
+| ORM            | [GORM](https://gorm.io)                                |
+| Configuration  | [Viper](https://github.com/spf13/viper)                |
+| Authentication | [JWT](https://golang-jwt.github.io/jwt)                |
+| Hot Reload     | [Air](https://github.com/cosmtrek/air)                 |
+| Database       | PostgreSQL                                             |
+| Cache          | Redis                                                  |
+
+---
+
+## 🎓 Learn More
+
+### Adding New Features
+
+**Want to add a new domain (e.g., "Product")?**
+
+```bash
+# Use the generator tool
+go-base-gen domain --dn product --pkg github.com/yourusername/yourproject
+
+# This creates:
+# - internal/domain/entity/product.go
+# - internal/domain/repository/product_repo.go
+# - internal/domain/service/product_svc.go
+# - internal/service/product_svc.go
+# - internal/usecase/product/
+# - internal/adapter/repository/product_dao.go
+# - internal/adapter/repository/product_repo.go
+# - internal/delivery/http/product_handler.go
+# - internal/delivery/http/dto/product_dto.go
+```
+
+### Architecture Principles
+
+1. **Dependency Rule**: Inner layers don't know about outer layers
+2. **Interface Segregation**: Use small, focused interfaces
+3. **Dependency Injection**: Wire dependencies in registry
+4. **Testability**: Mock external dependencies
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
@@ -144,3 +234,9 @@ Go-App follows **Clean Architecture** with separation of concerns across distinc
 If you find this project helpful:
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/dung13890)
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](https://opensource.org/licenses/MIT) for details.
