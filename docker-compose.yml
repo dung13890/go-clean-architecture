@@ -5,10 +5,7 @@ volumes:
 services:
   go-app:
     platform: linux/amd64
-    build:
-      context: ./
-      dockerfile: ./.docker/local/go/Dockerfile
-    image: go-app:1.25-alpine
+    image: golang:1.25-alpine
     networks:
       - go-app-net
     stdin_open: true

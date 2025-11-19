@@ -4,9 +4,8 @@ import (
 	"context"
 	"time"
 
-	"go-app/internal/adapter/cache"
 	"go-app/internal/domain/entity"
-	"go-app/internal/domain/service"
+	"go-app/internal/domain/gateway"
 	"go-app/internal/infrastructure/config"
 	"go-app/internal/infrastructure/constant"
 	"go-app/pkg/errors"
@@ -14,13 +13,21 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// jWTService is a struct that represent the jwt's service
-type jWTService struct {
-	cm cache.Client
+type CustomClaims struct {
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	RoleID uint   `json:"role_id"`
+	jwt.RegisteredClaims
 }
 
-// NewJWTService will create new an jwtService object representation of service.JWTService interface
-func NewJWTService(cm cache.Client) service.JWTService {
+// jWTService is a struct that represent the jwt's service
+type jWTService struct {
+	cm gateway.Cache
+}
+
+// NewJWTService will create new an jwtService object representation of gateway.JWTService interface
+func NewJWTService(cm gateway.Cache) gateway.JWTService {
 	return &jWTService{
 		cm: cm,
 	}
@@ -37,7 +44,7 @@ func (*jWTService) GenerateToken(_ context.Context, user *entity.User) (string, 
 	exp := jwt.NewNumericDate(expirationTime)
 
 	// Generate token
-	cls := &entity.Claims{
+	cls := &CustomClaims{
 		ID:     user.ID,
 		Name:   user.Name,
 		Email:  user.Email,
@@ -92,12 +99,12 @@ func (svc *jWTService) Decode(ctx context.Context, token any) (*entity.User, err
 }
 
 // convertToClaims is a function to convert the token to claims
-func convertToClaims(token any) (*entity.Claims, error) {
+func convertToClaims(token any) (*CustomClaims, error) {
 	tk, ok := token.(*jwt.Token)
 	if !ok {
 		return nil, errors.ErrJWTInvalidCredentials.Trace()
 	}
-	claims, ok := tk.Claims.(*entity.Claims)
+	claims, ok := tk.Claims.(*CustomClaims)
 	if !ok {
 		return nil, errors.ErrJWTInvalidClaims.Trace()
 	}

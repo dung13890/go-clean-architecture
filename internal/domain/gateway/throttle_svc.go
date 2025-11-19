@@ -1,5 +1,5 @@
 //go:generate mockgen -source=$GOFILE -destination=mock/throttle_svc_mock.go
-package service
+package gateway
 
 import (
 	"context"

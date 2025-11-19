@@ -1,8 +1,8 @@
 package http
 
 import (
-	"go-app/internal/domain/entity"
-	"go-app/internal/domain/service"
+	"go-app/internal/adapter/gateway/service"
+	"go-app/internal/domain/gateway"
 	"go-app/internal/infrastructure/config"
 	"go-app/internal/infrastructure/constant"
 	"go-app/pkg/errors"
@@ -16,7 +16,7 @@ import (
 func setupJWT() echo.MiddlewareFunc {
 	jwtConf := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(entity.Claims)
+			return new(service.CustomClaims)
 		},
 		SigningKey: []byte(config.GetAppConfig().AppJWTKey),
 	}
@@ -25,7 +25,7 @@ func setupJWT() echo.MiddlewareFunc {
 }
 
 // authenticated .-
-func authenticated(svc service.JWTService) echo.MiddlewareFunc {
+func authenticated(svc gateway.JWTService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			token := c.Get("user")

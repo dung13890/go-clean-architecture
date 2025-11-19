@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"go-app/internal/adapter/presenter"
 	"go-app/internal/delivery/http/dto"
-	"go-app/internal/delivery/http/mapper"
 	"go-app/internal/usecase/user"
 	"go-app/pkg/errors"
 
@@ -33,7 +33,7 @@ func (hl *userHandler) Index(c echo.Context) error {
 	}
 	usersRes := make([]dto.UserResponse, 0)
 	for i := range users {
-		user := mapper.ConvertUserEntityToResponse(&users[i])
+		user := presenter.ConvertUserEntityToResponse(&users[i])
 		usersRes = append(usersRes, user)
 	}
 
@@ -52,7 +52,7 @@ func (hl *userHandler) Show(c echo.Context) error {
 		return errors.Throw(err)
 	}
 
-	return c.JSON(http.StatusOK, mapper.ConvertUserEntityToResponse(user))
+	return c.JSON(http.StatusOK, presenter.ConvertUserEntityToResponse(user))
 }
 
 // Store will create data
@@ -67,7 +67,7 @@ func (hl *userHandler) Store(c echo.Context) error {
 		return errors.ErrUnprocessableEntity.Wrap(err)
 	}
 
-	user := mapper.ConvertUserRequestToEntity(userReq)
+	user := presenter.ConvertUserRequestToEntity(userReq)
 
 	ctx := c.Request().Context()
 	if err := hl.usecase.Store(ctx, user); err != nil {
@@ -94,7 +94,7 @@ func (hl *userHandler) Update(c echo.Context) error {
 		return errors.ErrUnprocessableEntity.Wrap(err)
 	}
 
-	user := mapper.ConvertUserRequestToEntity(userReq)
+	user := presenter.ConvertUserRequestToEntity(userReq)
 	ctx := c.Request().Context()
 	if err := hl.usecase.Update(ctx, uint(id), user); err != nil {
 		return errors.Throw(err)

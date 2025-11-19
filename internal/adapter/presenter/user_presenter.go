@@ -1,11 +1,11 @@
-package mapper
+package presenter
 
 import (
 	"go-app/internal/delivery/http/dto"
 	"go-app/internal/domain/entity"
 )
 
-// ConvertUserEntityToResponse DTO
+// ConvertUserEntityToResponse DTO http purpose
 func ConvertUserEntityToResponse(user *entity.User) dto.UserResponse {
 	return dto.UserResponse{
 		ID:        user.ID,
@@ -17,7 +17,7 @@ func ConvertUserEntityToResponse(user *entity.User) dto.UserResponse {
 	}
 }
 
-// ConvertUserRequestToEntity DTO
+// ConvertUserRequestToEntity DTO http purpose
 func ConvertUserRequestToEntity(u *dto.UserRequest) *entity.User {
 	return &entity.User{
 		Name:     u.Name,

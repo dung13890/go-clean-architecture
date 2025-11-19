@@ -76,32 +76,32 @@ air -c cmd/app/.air.toml
 ### Architecture Flow
 
 ```plaintext
-Handler → UseCase → Domain Interface (Service, Repository)
-    ↓                       ↑
-Validation                  └─ Adapters (Cache, DB, External)
+Handler → UseCase → Domain Interface (gateway, Repository, internal service)
+            ↓               ↑
+        Validation          └─ Adapters (Cache, DB, External)
 ```
 
 ### Directory Layout
 
 ```plaintext
 internal/
-├── domain/              # 🎯 Core Business Layer
+├── domain/              # 🎯 Core Business Layer (Layer 1)
 │   ├── entity/          # Business entities (User, Role, etc.)
 │   ├── repository/      # Repository interfaces
-│   └── service/         # Service interfaces
+│   ├── gateway/         # Gateway interfaces
+│   └── service/         # Pure domain business services
 │
-├── usecase/             # 📋 Application Logic
-├── service/             # 🔧 Business Logic Implementation
-├── adapter/             # 🔌 External Integrations
+├── usecase/             # 📋 Application orchestrates workflow (Layer 2)
+├── adapter/             # 🔌 External Integrations (Layer 3)
 │   ├── repository/      # Data persistence
-│   ├── cache/           # Cache
-│   └── external/        # Third-party APIs
+│   ├── gateway/         # External services (SMTP, Cache)
+│   └── presenter/       # maps usecase output -> delivery
 │
-├── delivery/            # 🌐 User Interface Layer
+├── delivery/            # 🌐 User Interface Layer (Layer 4)
 │   └── http/            # HTTP handlers & routes
-├── infrastructure/      # ⚙️ Cross-cutting Concerns
-│
-└── registry/            # 🏗️ Dependency Injection
+└── infrastructure/      # ⚙️ Cross-cutting Concerns (Layer 4)
+    └── registry/        #  🏗️ Dependency Injection
+
 ```
 
 ### Layer Responsibilities
@@ -110,10 +110,8 @@ internal/
 | ---------------- | --------------------------------------- | -------------------------- |
 | **Domain**       | Core business rules & interfaces        | User entity, UserRepo      |
 | **Usecase**      | Application workflows & orchestration   | Register user flow         |
-| **Service**      | Reusable business logic                 | JWT generation, Email send |
 | **Adapter**      | External system integration             | PostgreSQL, Redis, SMTP    |
 | **Delivery**     | Request/response handling               | HTTP handlers, CLI         |
-| **Registry**     | Wire dependencies together              | Inject repos into usecases |
 | **Infrastructure** | Technical concerns                    | Config, DB, Redis          |
 
 ---
@@ -205,13 +203,10 @@ go-base-gen domain --dn product --pkg github.com/yourusername/yourproject
 # This creates:
 # - internal/domain/entity/product.go
 # - internal/domain/repository/product_repo.go
-# - internal/domain/service/product_svc.go
-# - internal/service/product_svc.go
 # - internal/usecase/product/
 # - internal/adapter/repository/product_dao.go
 # - internal/adapter/repository/product_repo.go
 # - internal/delivery/http/product_handler.go
-# - internal/delivery/http/dto/product_dto.go
 ```
 
 ### Architecture Principles

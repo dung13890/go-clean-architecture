@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"go-app/internal/domain/service"
+	"go-app/internal/domain/gateway"
 	"go-app/internal/infrastructure/config"
 	"go-app/pkg/errors"
 )
@@ -24,7 +24,7 @@ type Email struct {
 }
 
 // NewEmail creates an Email, and returns the pointer to it.
-func NewEmail() service.MailService {
+func NewSMTPEmail() gateway.MailService {
 	mailConf := config.GetEmailConfig()
 
 	return &Email{

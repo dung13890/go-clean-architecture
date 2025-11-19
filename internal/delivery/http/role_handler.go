@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"go-app/internal/adapter/presenter"
 	"go-app/internal/delivery/http/dto"
-	"go-app/internal/delivery/http/mapper"
 	"go-app/internal/usecase/role"
 	"go-app/pkg/errors"
 
@@ -33,7 +33,7 @@ func (hl *roleHandler) Index(c echo.Context) error {
 	}
 	rolesRes := make([]dto.RoleResponse, 0)
 	for i := range roles {
-		role := mapper.ConvertRoleEntityToResponse(&roles[i])
+		role := presenter.ConvertRoleEntityToResponse(&roles[i])
 		rolesRes = append(rolesRes, role)
 	}
 
@@ -52,7 +52,7 @@ func (hl *roleHandler) Show(c echo.Context) error {
 		return errors.Throw(err)
 	}
 
-	return c.JSON(http.StatusOK, mapper.ConvertRoleEntityToResponse(role))
+	return c.JSON(http.StatusOK, presenter.ConvertRoleEntityToResponse(role))
 }
 
 // Store will create data
@@ -67,7 +67,7 @@ func (hl *roleHandler) Store(c echo.Context) error {
 		return errors.ErrUnprocessableEntity.Wrap(err)
 	}
 
-	role := mapper.ConvertRoleRequestToEntity(roleReq)
+	role := presenter.ConvertRoleRequestToEntity(roleReq)
 
 	ctx := c.Request().Context()
 	if err := hl.usecase.Store(ctx, role); err != nil {
@@ -94,7 +94,7 @@ func (hl *roleHandler) Update(c echo.Context) error {
 		return errors.ErrUnprocessableEntity.Wrap(err)
 	}
 
-	role := mapper.ConvertRoleRequestToEntity(roleReq)
+	role := presenter.ConvertRoleRequestToEntity(roleReq)
 
 	ctx := c.Request().Context()
 	if err := hl.usecase.Update(ctx, uint(id), role); err != nil {
