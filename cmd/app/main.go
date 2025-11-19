@@ -12,7 +12,7 @@ import (
 	"go-app/internal/infrastructure/constant"
 	"go-app/internal/infrastructure/database"
 	"go-app/internal/infrastructure/redis"
-	"go-app/internal/registry"
+	"go-app/internal/infrastructure/registry"
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
 

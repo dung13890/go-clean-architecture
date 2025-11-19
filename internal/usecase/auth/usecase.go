@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"go-app/internal/domain/gateway"
 	"go-app/internal/domain/repository"
-	"go-app/internal/domain/service"
 )
 
 var (
@@ -11,18 +11,18 @@ var (
 
 // Usecase ...
 type Usecase struct {
-	jwtSvc      service.JWTService
-	throttleSvc service.ThrottleService
-	mailSvc     service.MailService
+	jwtSvc      gateway.JWTService
+	throttleSvc gateway.ThrottleService
+	mailSvc     gateway.MailService
 	repo        repository.UserRepository
 	pwRepo      repository.PasswordResetRepository
 }
 
 // NewUsecase will create new an userUsecase object representation of domain.Usecase interface
 func NewUsecase(
-	jwtSvc service.JWTService,
-	throttleSvc service.ThrottleService,
-	mailSvc service.MailService,
+	jwtSvc gateway.JWTService,
+	throttleSvc gateway.ThrottleService,
+	mailSvc gateway.MailService,
 	repo repository.UserRepository,
 	pwRepo repository.PasswordResetRepository,
 ) *Usecase {

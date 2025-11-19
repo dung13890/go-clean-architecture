@@ -5,6 +5,8 @@ import (
 	"go-app/pkg/errors"
 	"time"
 
+	"go-app/internal/domain/gateway"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -14,7 +16,7 @@ type redisStore struct {
 }
 
 // NewRedisStore create cache instance with redis
-func NewRedisStore(rd *redis.Client) Client {
+func NewRedisStore(rd *redis.Client) gateway.Cache {
 	return &redisStore{
 		client: rd,
 	}

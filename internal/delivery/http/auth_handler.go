@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
+	"go-app/internal/adapter/presenter"
 	"go-app/internal/delivery/http/dto"
-	"go-app/internal/delivery/http/mapper"
 	"go-app/internal/domain/entity"
 	"go-app/internal/infrastructure/constant"
 	"go-app/internal/usecase/auth"
@@ -37,13 +37,13 @@ func (hl *authHandler) Login(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	user := mapper.ConvertLoginRequestToEntity(userReq)
+	user := presenter.ConvertLoginRequestToEntity(userReq)
 	tokenStr, exp, err := hl.usecase.Login(ctx, user, c.RealIP())
 	if err != nil {
 		return errors.Throw(err)
 	}
 
-	return c.JSON(http.StatusOK, mapper.ConvertUserToLoginResponse(*user, tokenStr, exp))
+	return c.JSON(http.StatusOK, presenter.ConvertUserToLoginResponse(*user, tokenStr, exp))
 }
 
 // Logout for user
@@ -61,7 +61,7 @@ func (hl *authHandler) Logout(c echo.Context) error {
 func (*authHandler) Me(c echo.Context) error {
 	user, _ := c.Get(constant.GuardJWT).(*entity.User)
 
-	return c.JSON(http.StatusOK, mapper.ConvertUserEntityToResponse(user))
+	return c.JSON(http.StatusOK, presenter.ConvertUserEntityToResponse(user))
 }
 
 // Register for user
@@ -76,12 +76,12 @@ func (hl *authHandler) Register(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	user, err := hl.usecase.Register(ctx, mapper.ConvertRegisterRequestToEntity(userReq))
+	user, err := hl.usecase.Register(ctx, presenter.ConvertRegisterRequestToEntity(userReq))
 	if err != nil {
 		return errors.Throw(err)
 	}
 
-	return c.JSON(http.StatusCreated, mapper.ConvertUserEntityToResponse(user))
+	return c.JSON(http.StatusCreated, presenter.ConvertUserEntityToResponse(user))
 }
 
 // ChangePassword will return status when change password success

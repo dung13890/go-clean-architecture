@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"go-app/internal/adapter/cache"
-	"go-app/internal/domain/service"
+	"go-app/internal/domain/gateway"
 	"go-app/internal/infrastructure/constant"
 	"go-app/pkg/errors"
 	"go-app/pkg/utils"
@@ -13,7 +12,7 @@ import (
 
 // throttleService is a struct that represent the throttle's service
 type throttleService struct {
-	cm cache.Client
+	cm gateway.Cache
 }
 
 type throttleData struct {
@@ -21,7 +20,7 @@ type throttleData struct {
 }
 
 // NewThrottleService will create new an throttleService object representation of domain.ThrottleService interface
-func NewThrottleService(cm cache.Client) service.ThrottleService {
+func NewThrottleService(cm gateway.Cache) gateway.ThrottleService {
 	return &throttleService{
 		cm: cm,
 	}

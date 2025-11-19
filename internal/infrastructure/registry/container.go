@@ -1,11 +1,11 @@
 package registry
 
 import (
-	"go-app/internal/adapter/cache"
-	"go-app/internal/adapter/mail"
+	"go-app/internal/adapter/gateway/cache"
+	"go-app/internal/adapter/gateway/mail"
+	"go-app/internal/adapter/gateway/service"
 	"go-app/internal/adapter/repository"
-	dmSvc "go-app/internal/domain/service"
-	"go-app/internal/service"
+	"go-app/internal/domain/gateway"
 	"go-app/internal/usecase/auth"
 	"go-app/internal/usecase/role"
 	"go-app/internal/usecase/user"
@@ -19,7 +19,7 @@ type Registry struct {
 	AuthUc *auth.Usecase
 	UserUc *user.Usecase
 	RoleUc *role.Usecase
-	JWTSvc dmSvc.JWTService
+	JWTSvc gateway.JWTService
 }
 
 // NewRegistry will create new registry
@@ -30,8 +30,8 @@ func NewRegistry(db *gorm.DB, rdb *redis.Client) *Registry {
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 
 	cm := cache.NewRedisStore(rdb)
-	mailSvc := mail.NewEmail()
-	// Initialize services with repositories
+	mailSvc := mail.NewSMTPEmail()
+	// Initialize gateway
 	jwtSvc := service.NewJWTService(cm)
 	throttleSvc := service.NewThrottleService(cm)
 

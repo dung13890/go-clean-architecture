@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"go-app/internal/domain/service"
+	"go-app/internal/domain/gateway"
 	"go-app/internal/infrastructure/config"
-	"go-app/internal/registry"
+	"go-app/internal/infrastructure/registry"
 	"go-app/pkg/errors"
 	"go-app/pkg/logger"
 	"go-app/pkg/validate"
@@ -18,7 +18,7 @@ import (
 // NewHTTPHandler registry http
 func NewHTTPHandler(
 	e *echo.Echo,
-	svc service.JWTService,
+	svc gateway.JWTService,
 	registry *registry.Registry,
 ) {
 	e.Use(middleware.Logger())
